@@ -8,6 +8,8 @@ import {
 
 import { db } from "../pages/Firebase";
 
+
+
 export default function Cadastro() {
 
   const [Nome, setNome] = useState("");
