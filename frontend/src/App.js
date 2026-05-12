@@ -1,5 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import Cadastro from "./pages/Cadastro";
+import Cadastro from "./services/Cadastro";
 
 function App() {
   return <Cadastro />;
