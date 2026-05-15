@@ -11,22 +11,22 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#111827] p-6 rounded-xl shadow-lg">
-            <h2 className="text-gray-400 text-sm">Catequizandos</h2>
+          <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-2xl shadow-xl hover:scale-105 transition duration-300">
+            <h2 className="text-blue-100 text-sm">Catequizandos</h2>
 
-            <p className="text-3xl font-bold text-white mt-2">120</p>
+            <p className="text-4xl font-bold text-white mt-4">120</p>
           </div>
 
-          <div className="bg-[#111827] p-6 rounded-xl shadow-lg">
-            <h2 className="text-gray-400 text-sm">Turmas</h2>
+          <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-2xl shadow-xl hover:scale-105 transition duration-300">
+            <h2 className="text-purple-100 text-sm">Turmas</h2>
 
-            <p className="text-3xl font-bold text-white mt-2">8</p>
+            <p className="text-4xl font-bold text-white mt-4">8</p>
           </div>
 
-          <div className="bg-[#111827] p-6 rounded-xl shadow-lg">
-            <h2 className="text-gray-400 text-sm">Catequistas</h2>
+          <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 rounded-2xl shadow-xl hover:scale-105 transition duration-300">
+            <h2 className="text-emerald-100 text-sm">Catequistas</h2>
 
-            <p className="text-3xl font-bold text-white mt-2">15</p>
+            <p className="text-4xl font-bold text-white mt-4">15</p>
           </div>
         </div>
 
