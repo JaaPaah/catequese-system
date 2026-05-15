@@ -1,4 +1,5 @@
 import MainLayout from "../layouts/MainLayout";
+import GraficoDashboard from "../components/GraficoDashboard";
 
 export default function Dashboard() {
   return (
@@ -29,6 +30,8 @@ export default function Dashboard() {
             <p className="text-4xl font-bold text-white mt-4">15</p>
           </div>
         </div>
+
+        <GraficoDashboard />
 
         <div className="bg-[#111827] p-6 rounded-2xl shadow-xl border border-slate-800">
           <div className="flex items-center justify-between mb-6">
