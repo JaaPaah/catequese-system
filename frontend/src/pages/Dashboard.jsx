@@ -30,16 +30,52 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-[#111827] p-6 rounded-xl shadow-lg">
-          <h2 className="text-white text-xl font-semibold mb-4">
-            Atividades Recentes
-          </h2>
+        <div className="bg-[#111827] p-6 rounded-2xl shadow-xl border border-slate-800">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-white text-xl font-semibold">
+              Atividades Recentes
+            </h2>
 
-          <ul className="space-y-3 text-gray-300">
-            <li>Novo catequizando cadastrado</li>
-            <li>Turma de Crisma atualizada</li>
-            <li>Presença registrada</li>
-          </ul>
+            <button className="text-sm text-blue-400 hover:text-blue-300 transition">
+              Ver todas
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-slate-900 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-white font-medium">
+                  Novo catequizando cadastrado
+                </p>
+
+                <p className="text-gray-400 text-sm">Há 5 minutos</p>
+              </div>
+
+              <span className="text-green-400 text-sm">Novo</span>
+            </div>
+
+            <div className="bg-slate-900 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-white font-medium">
+                  Turma de Crisma atualizada
+                </p>
+
+                <p className="text-gray-400 text-sm">Hoje às 14:30</p>
+              </div>
+
+              <span className="text-blue-400 text-sm">Atualização</span>
+            </div>
+
+            <div className="bg-slate-900 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-white font-medium">Presença registrada</p>
+
+                <p className="text-gray-400 text-sm">Hoje às 09:15</p>
+              </div>
+
+              <span className="text-yellow-400 text-sm">Registro</span>
+            </div>
+          </div>
         </div>
       </div>
     </MainLayout>
