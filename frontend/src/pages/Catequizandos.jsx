@@ -1,5 +1,7 @@
 import MainLayout from "../layouts/MainLayout";
 
+import { Search, Pencil, Trash2 } from "lucide-react";
+
 const catequizandos = [
   {
     id: 1,
@@ -42,6 +44,24 @@ export default function Catequizandos() {
           </button>
         </div>
 
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center bg-[#111827] border border-slate-800 rounded-xl px-4 py-3 w-full max-w-md">
+            <Search size={18} className="text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Buscar catequizando..."
+              className="bg-transparent outline-none text-white ml-3 w-full"
+            />
+          </div>
+
+          <select className="bg-[#111827] border border-slate-800 text-white px-4 py-3 rounded-xl">
+            <option>Todas as turmas</option>
+            <option>Crisma</option>
+            <option>Eucaristia</option>
+          </select>
+        </div>
+
         <div className="bg-[#111827] rounded-2xl shadow-xl border border-slate-800 overflow-hidden">
           <table className="w-full">
             <thead className="bg-slate-900">
@@ -53,6 +73,8 @@ export default function Catequizandos() {
                 <th className="text-left text-gray-300 p-4">Idade</th>
 
                 <th className="text-left text-gray-300 p-4">Status</th>
+
+                <th className="text-left text-gray-300 p-4">Ações</th>
               </tr>
             </thead>
 
@@ -78,6 +100,18 @@ export default function Catequizandos() {
                     >
                       {catequizando.status}
                     </span>
+                  </td>
+
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <button className="text-blue-400 hover:text-blue-300 transition">
+                        <Pencil size={18} />
+                      </button>
+
+                      <button className="text-red-400 hover:text-red-300 transition">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
