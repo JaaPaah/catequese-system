@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import MainLayout from "../layouts/MainLayout";
 
 import { Search, Pencil, Trash2 } from "lucide-react";
@@ -26,7 +28,16 @@ const catequizandos = [
   },
 ];
 
+const initialForm = {
+  nome: "",
+  turma: "",
+  idade: "",
+};
+
 export default function Catequizandos() {
+  const [openModal, setOpenModal] = useState(false);
+  const [form, setForm] = useState(initialForm);
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -39,7 +50,10 @@ export default function Catequizandos() {
             </p>
           </div>
 
-          <button className="bg-blue-600 hover:bg-blue-500 transition px-5 py-3 rounded-xl text-white font-medium">
+          <button
+            onClick={() => setOpenModal(true)}
+            className="bg-blue-600 hover:bg-blue-500 transition px-5 py-3 rounded-xl text-white font-medium"
+          >
             + Novo Catequizando
           </button>
         </div>
@@ -119,6 +133,58 @@ export default function Catequizandos() {
           </table>
         </div>
       </div>
+
+      {openModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#111827] w-full max-w-lg rounded-2xl p-8 shadow-2xl border border-slate-800">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                Novo Catequizando
+              </h2>
+
+              <button
+                onClick={() => setOpenModal(false)}
+                className="text-gray-400 hover:text-white transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Nome"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
+              />
+
+              <input
+                type="text"
+                placeholder="Turma"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
+              />
+
+              <input
+                type="number"
+                placeholder="Idade"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-4 mt-8">
+              <button
+                onClick={() => setOpenModal(false)}
+                className="px-5 py-3 rounded-xl bg-slate-700 text-white hover:bg-slate-600 transition"
+              >
+                Cancelar
+              </button>
+
+              <button className="px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition">
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 }
