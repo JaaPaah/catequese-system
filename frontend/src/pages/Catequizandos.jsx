@@ -39,6 +39,8 @@ export default function Catequizandos() {
 
   const [editingId, setEditingId] = useState(null);
 
+  const [search, setSearch] = useState("");
+
   const [form, setForm] = useState(initialForm);
 
   const [catequizandos, setCatequizandos] = useState(initialCatequizandos);
@@ -92,6 +94,10 @@ export default function Catequizandos() {
     setOpenModal(true);
   }
 
+  const filteredCatequizandos = catequizandos.filter((item) =>
+    item.nome.toLowerCase().includes(search.toLowerCase()),
+  );
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -123,6 +129,8 @@ export default function Catequizandos() {
             <input
               type="text"
               placeholder="Buscar catequizando..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="bg-transparent outline-none text-white ml-3 w-full"
             />
           </div>
@@ -151,7 +159,7 @@ export default function Catequizandos() {
             </thead>
 
             <tbody>
-              {catequizandos.map((catequizando) => (
+              {filteredCatequizandos.map((catequizando) => (
                 <tr
                   key={catequizando.id}
                   className="border-t border-slate-800 hover:bg-slate-900 transition"
