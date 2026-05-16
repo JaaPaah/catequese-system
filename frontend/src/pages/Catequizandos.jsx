@@ -4,6 +4,10 @@ import MainLayout from "../layouts/MainLayout";
 
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 
+import toast from "react-hot-toast";
+
+import { motion } from "framer-motion";
+
 export default function Catequizandos() {
   const [busca, setBusca] = useState("");
 
@@ -58,12 +62,18 @@ export default function Catequizandos() {
     setNovoIdade("");
     setNovaTurma("");
     setEditandoId(null);
+
+    toast.success(
+      editandoId ? "Catequizando atualizado!" : "Catequizando cadastrado!",
+    );
   }
 
   function excluirCatequizando(id) {
     const lista = catequizandos.filter((item) => item.id !== id);
 
     setCatequizandos(lista);
+
+    toast.success("Catequizando removido!");
   }
 
   function editarCatequizando(item) {
@@ -178,8 +188,28 @@ export default function Catequizandos() {
       </div>
 
       {modalAberto && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-full max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+        >
+          <motion.div
+            initial={{
+              scale: 0.8,
+              opacity: 0,
+              y: 40,
+            }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.25,
+            }}
+            className="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-full max-w-2xl"
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">
                 {editandoId ? "Editar Catequizando" : "Novo Catequizando"}
@@ -231,8 +261,8 @@ export default function Catequizandos() {
                 {editandoId ? "Salvar Alterações" : "Adicionar"}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </MainLayout>
   );
