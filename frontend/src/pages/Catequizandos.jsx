@@ -37,9 +37,60 @@ const initialForm = {
 export default function Catequizandos() {
   const [openModal, setOpenModal] = useState(false);
 
+  const [editingId, setEditingId] = useState(null);
+
   const [form, setForm] = useState(initialForm);
 
   const [catequizandos, setCatequizandos] = useState(initialCatequizandos);
+
+  function handleSave() {
+    if (!form.nome || !form.turma || !form.idade) {
+      return;
+    }
+
+    if (editingId) {
+      const listaAtualizada = catequizandos.map((item) =>
+        item.id === editingId
+          ? {
+              ...item,
+              nome: form.nome,
+              turma: form.turma,
+              idade: form.idade,
+            }
+          : item,
+      );
+
+      setCatequizandos(listaAtualizada);
+    } else {
+      const novoCatequizando = {
+        id: Date.now(),
+        nome: form.nome,
+        turma: form.turma,
+        idade: form.idade,
+        status: "Ativo",
+      };
+
+      setCatequizandos([...catequizandos, novoCatequizando]);
+    }
+
+    setForm(initialForm);
+
+    setEditingId(null);
+
+    setOpenModal(false);
+  }
+
+  function handleEdit(catequizando) {
+    setEditingId(catequizando.id);
+
+    setForm({
+      nome: catequizando.nome,
+      turma: catequizando.turma,
+      idade: catequizando.idade,
+    });
+
+    setOpenModal(true);
+  }
 
   return (
     <MainLayout>
@@ -54,7 +105,11 @@ export default function Catequizandos() {
           </div>
 
           <button
-            onClick={() => setOpenModal(true)}
+            onClick={() => {
+              setEditingId(null);
+              setForm(initialForm);
+              setOpenModal(true);
+            }}
             className="bg-blue-600 hover:bg-blue-500 transition px-5 py-3 rounded-xl text-white font-medium"
           >
             + Novo Catequizando
@@ -121,7 +176,10 @@ export default function Catequizandos() {
 
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <button className="text-blue-400 hover:text-blue-300 transition">
+                      <button
+                        onClick={() => handleEdit(catequizando)}
+                        className="text-blue-400 hover:text-blue-300 transition"
+                      >
                         <Pencil size={18} />
                       </button>
 
@@ -151,7 +209,7 @@ export default function Catequizandos() {
           <div className="bg-[#111827] w-full max-w-lg rounded-2xl p-8 shadow-2xl border border-slate-800">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">
-                Novo Catequizando
+                {editingId ? "Editar Catequizando" : "Novo Catequizando"}
               </h2>
 
               <button
@@ -212,28 +270,10 @@ export default function Catequizandos() {
               </button>
 
               <button
-                onClick={() => {
-                  if (!form.nome || !form.turma || !form.idade) {
-                    return;
-                  }
-
-                  const novoCatequizando = {
-                    id: Date.now(),
-                    nome: form.nome,
-                    turma: form.turma,
-                    idade: form.idade,
-                    status: "Ativo",
-                  };
-
-                  setCatequizandos([...catequizandos, novoCatequizando]);
-
-                  setForm(initialForm);
-
-                  setOpenModal(false);
-                }}
+                onClick={handleSave}
                 className="px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition"
               >
-                Salvar
+                {editingId ? "Salvar Alterações" : "Salvar"}
               </button>
             </div>
           </div>
