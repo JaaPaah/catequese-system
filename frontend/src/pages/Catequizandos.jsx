@@ -4,7 +4,7 @@ import MainLayout from "../layouts/MainLayout";
 
 import { Search, Pencil, Trash2 } from "lucide-react";
 
-const catequizandos = [
+const initialCatequizandos = [
   {
     id: 1,
     nome: "João Silva",
@@ -36,7 +36,10 @@ const initialForm = {
 
 export default function Catequizandos() {
   const [openModal, setOpenModal] = useState(false);
+
   const [form, setForm] = useState(initialForm);
+
+  const [catequizandos, setCatequizandos] = useState(initialCatequizandos);
 
   return (
     <MainLayout>
@@ -154,18 +157,39 @@ export default function Catequizandos() {
               <input
                 type="text"
                 placeholder="Nome"
+                value={form.nome}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    nome: e.target.value,
+                  })
+                }
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
               />
 
               <input
                 type="text"
                 placeholder="Turma"
+                value={form.turma}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    turma: e.target.value,
+                  })
+                }
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
               />
 
               <input
                 type="number"
                 placeholder="Idade"
+                value={form.idade}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    idade: e.target.value,
+                  })
+                }
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
               />
             </div>
@@ -178,7 +202,28 @@ export default function Catequizandos() {
                 Cancelar
               </button>
 
-              <button className="px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition">
+              <button
+                onClick={() => {
+                  if (!form.nome || !form.turma || !form.idade) {
+                    return;
+                  }
+
+                  const novoCatequizando = {
+                    id: Date.now(),
+                    nome: form.nome,
+                    turma: form.turma,
+                    idade: form.idade,
+                    status: "Ativo",
+                  };
+
+                  setCatequizandos([...catequizandos, novoCatequizando]);
+
+                  setForm(initialForm);
+
+                  setOpenModal(false);
+                }}
+                className="px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition"
+              >
                 Salvar
               </button>
             </div>
