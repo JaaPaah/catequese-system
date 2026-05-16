@@ -2,51 +2,36 @@ import {
   LayoutDashboard,
   Users,
   BookOpen,
+  ClipboardCheck,
   LogIn,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
-  const location = useLocation();
-
-  const menus = [
-    {
-      name: "Dashboard",
-      icon: <LayoutDashboard size={20} />,
-      path: "/",
-    },
-    {
-      name: "Catequizandos",
-      icon: <Users size={20} />,
-      path: "/catequizandos",
-    },
-    {
-      name: "Turmas",
-      icon: <BookOpen size={20} />,
-      path: "/turmas",
-    },
-    {
-      name: "Login",
-      icon: <LogIn size={20} />,
-      path: "/login",
-    },
-  ];
-
   return (
     <aside
-      className={`min-h-screen bg-[#0f172a] border-r border-slate-800 transition-all duration-300 flex flex-col ${
-        collapsed ? "w-24" : "w-72"
-      }`}
+      className={`
+        bg-[#0f172a]
+        border-r
+        border-slate-800
+        min-h-screen
+        p-4
+        transition-all
+        duration-300
+        flex
+        flex-col
+        ${collapsed ? "w-24" : "w-72"}
+      `}
     >
-      <div className="flex items-center justify-between p-6 border-b border-slate-800">
+      <div className="flex items-center justify-between mb-10">
         {!collapsed && (
           <div>
             <h1 className="text-2xl font-bold text-white">Catequese</h1>
 
-            <p className="text-sm text-gray-400">Painel Administrativo</p>
+            <p className="text-gray-400 text-sm">Painel Administrativo</p>
           </div>
         )}
 
@@ -58,26 +43,51 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         </button>
       </div>
 
-      <nav className="flex flex-col gap-2 p-4">
-        {menus.map((menu) => {
-          const active = location.pathname === menu.path;
+      <nav className="flex flex-col gap-3">
+        <Link
+          to="/"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+        >
+          <LayoutDashboard size={20} />
 
-          return (
-            <Link
-              key={menu.name}
-              to={menu.path}
-              className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
-                active
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-gray-400 hover:bg-slate-800 hover:text-white"
-              }`}
-            >
-              {menu.icon}
+          {!collapsed && "Dashboard"}
+        </Link>
 
-              {!collapsed && <span className="font-medium">{menu.name}</span>}
-            </Link>
-          );
-        })}
+        <Link
+          to="/catequizandos"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+        >
+          <Users size={20} />
+
+          {!collapsed && "Catequizandos"}
+        </Link>
+
+        <Link
+          to="/turmas"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+        >
+          <BookOpen size={20} />
+
+          {!collapsed && "Turmas"}
+        </Link>
+
+        <Link
+          to="/presencas"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+        >
+          <ClipboardCheck size={20} />
+
+          {!collapsed && "Presenças"}
+        </Link>
+
+        <Link
+          to="/login"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+        >
+          <LogIn size={20} />
+
+          {!collapsed && "Login"}
+        </Link>
       </nav>
     </aside>
   );
