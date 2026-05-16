@@ -8,7 +8,7 @@ const initialCatequizandos = [
   {
     id: 1,
     nome: "João Silva",
-    turma: "Crisma A",
+    turma: "Crisma",
     idade: 14,
     status: "Ativo",
   },
@@ -40,6 +40,8 @@ export default function Catequizandos() {
   const [editingId, setEditingId] = useState(null);
 
   const [search, setSearch] = useState("");
+
+  const [filterTurma, setFilterTurma] = useState("Todas");
 
   const [form, setForm] = useState(initialForm);
 
@@ -94,9 +96,14 @@ export default function Catequizandos() {
     setOpenModal(true);
   }
 
-  const filteredCatequizandos = catequizandos.filter((item) =>
-    item.nome.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredCatequizandos = catequizandos.filter((item) => {
+    const matchSearch = item.nome.toLowerCase().includes(search.toLowerCase());
+
+    const matchTurma =
+      filterTurma === "Todas" ? true : item.turma === filterTurma;
+
+    return matchSearch && matchTurma;
+  });
 
   return (
     <MainLayout>
@@ -135,10 +142,18 @@ export default function Catequizandos() {
             />
           </div>
 
-          <select className="bg-[#111827] border border-slate-800 text-white px-4 py-3 rounded-xl">
-            <option>Todas as turmas</option>
-            <option>Crisma</option>
-            <option>Eucaristia</option>
+          <select
+            value={filterTurma}
+            onChange={(e) => setFilterTurma(e.target.value)}
+            className="bg-[#111827] border border-slate-800 text-white px-4 py-3 rounded-xl"
+          >
+            <option value="Todas">Todas as turmas</option>
+
+            <option value="Crisma">Crisma</option>
+
+            <option value="Eucaristia">Eucaristia</option>
+
+            <option value="Perseverança">Perseverança</option>
           </select>
         </div>
 
