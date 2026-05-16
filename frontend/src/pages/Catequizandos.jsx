@@ -125,7 +125,16 @@ export default function Catequizandos() {
                         <Pencil size={18} />
                       </button>
 
-                      <button className="text-red-400 hover:text-red-300 transition">
+                      <button
+                        onClick={() => {
+                          const novaLista = catequizandos.filter(
+                            (item) => item.id !== catequizando.id,
+                          );
+
+                          setCatequizandos(novaLista);
+                        }}
+                        className="text-red-400 hover:text-red-300 transition"
+                      >
                         <Trash2 size={18} />
                       </button>
                     </div>
