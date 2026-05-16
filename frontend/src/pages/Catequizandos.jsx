@@ -15,6 +15,8 @@ export default function Catequizandos() {
 
   const [editandoId, setEditandoId] = useState(null);
 
+  const [modalAberto, setModalAberto] = useState(false);
+
   const [catequizandos, setCatequizandos] = useState([
     {
       id: 1,
@@ -36,17 +38,26 @@ export default function Catequizandos() {
     }
 
     const novo = {
-      id: Date.now(),
+      id: editandoId || Date.now(),
       nome: novoNome,
       idade: novoIdade,
       turma: novaTurma,
     };
 
-    setCatequizandos([...catequizandos, novo]);
+    if (editandoId) {
+      const atualizados = catequizandos.map((item) =>
+        item.id === editandoId ? novo : item,
+      );
+
+      setCatequizandos(atualizados);
+    } else {
+      setCatequizandos([...catequizandos, novo]);
+    }
 
     setNovoNome("");
     setNovoIdade("");
     setNovaTurma("");
+    setEditandoId(null);
   }
 
   function excluirCatequizando(id) {
@@ -57,12 +68,14 @@ export default function Catequizandos() {
 
   function editarCatequizando(item) {
     setNovoNome(item.nome);
+
     setNovoIdade(item.idade);
+
     setNovaTurma(item.turma);
 
     setEditandoId(item.id);
 
-    excluirCatequizando(item.id);
+    setModalAberto(true);
   }
 
   const filtrados = catequizandos.filter((item) =>
@@ -78,46 +91,21 @@ export default function Catequizandos() {
 
             <p className="text-gray-400">Gerencie os catequizandos</p>
           </div>
-        </div>
-
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 space-y-4">
-          <h2 className="text-white text-xl font-semibold">
-            {editandoId ? "Editar Catequizando" : "Novo Catequizando"}
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            <input
-              type="text"
-              placeholder="Nome"
-              value={novoNome}
-              onChange={(e) => setNovoNome(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white outline-none"
-            />
-
-            <input
-              type="number"
-              placeholder="Idade"
-              value={novoIdade}
-              onChange={(e) => setNovoIdade(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white outline-none"
-            />
-
-            <input
-              type="text"
-              placeholder="Turma"
-              value={novaTurma}
-              onChange={(e) => setNovaTurma(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white outline-none"
-            />
-          </div>
 
           <button
-            onClick={adicionarCatequizando}
+            onClick={() => {
+              setModalAberto(true);
+
+              setNovoNome("");
+              setNovoIdade("");
+              setNovaTurma("");
+
+              setEditandoId(null);
+            }}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 transition px-5 py-3 rounded-xl text-white font-medium"
           >
             <Plus size={18} />
-
-            {editandoId ? "Salvar Alterações" : "Adicionar"}
+            Novo Catequizando
           </button>
         </div>
 
@@ -188,6 +176,64 @@ export default function Catequizandos() {
           </table>
         </div>
       </div>
+
+      {modalAberto && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-full max-w-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                {editandoId ? "Editar Catequizando" : "Novo Catequizando"}
+              </h2>
+
+              <button
+                onClick={() => setModalAberto(false)}
+                className="text-gray-400 hover:text-white text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <input
+                type="text"
+                placeholder="Nome"
+                value={novoNome}
+                onChange={(e) => setNovoNome(e.target.value)}
+                className="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white outline-none"
+              />
+
+              <input
+                type="number"
+                placeholder="Idade"
+                value={novoIdade}
+                onChange={(e) => setNovoIdade(e.target.value)}
+                className="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white outline-none"
+              />
+
+              <input
+                type="text"
+                placeholder="Turma"
+                value={novaTurma}
+                onChange={(e) => setNovaTurma(e.target.value)}
+                className="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => {
+                  adicionarCatequizando();
+
+                  setModalAberto(false);
+                }}
+                className="bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-xl text-white font-medium"
+              >
+                {editandoId ? "Salvar Alterações" : "Adicionar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 }
