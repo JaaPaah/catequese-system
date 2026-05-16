@@ -4,6 +4,8 @@ import { Users, BookOpen, UserCheck, TrendingUp } from "lucide-react";
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from "recharts";
 
+import { db } from "../services/Firebase";
+console.log(db);
 const dadosGrafico = [
   {
     nome: "Jan",
