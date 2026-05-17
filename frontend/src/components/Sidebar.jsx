@@ -45,7 +45,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
       <nav className="flex flex-col gap-3">
         <Link
-          to="/adm"
+          to="/"
           className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
         >
           <LayoutDashboard size={20} />

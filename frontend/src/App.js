@@ -15,53 +15,64 @@ import AlunoPresenca from "./pages/AlunoPresenca";
 import Presencas from "./pages/Presencas";
 
 export default function App() {
-
-    localStorage.setItem(
+  localStorage.setItem(
     "user",
     JSON.stringify({
-      nome: "AlunoTeste",
-      role: "aluno",
-    })
+      nome: "AdminTeste",
+      role: "adm",
+    }),
   );
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/adm" element={
-          <ProtectedRoute role="adm">
-            <Dashboard /> 
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute role="adm">
+              <Dashboard />
             </ProtectedRoute>
-        }/>
+          }
+        />
 
-        <Route path="/catequizandos" element={
-          <ProtectedRoute role="adm">
-          <Catequizandos />
-        </ProtectedRoute>
-        } />
+        <Route
+          path="/catequizandos"
+          element={
+            <ProtectedRoute role="adm">
+              <Catequizandos />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/turmas" element={
-          <ProtectedRoute role="adm"> 
-          <Turmas />
-          </ProtectedRoute>
-        }/>
+        <Route
+          path="/turmas"
+          element={
+            <ProtectedRoute role="adm">
+              <Turmas />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/presencas" element={
-          <ProtectedRoute role="adm"> 
-          <Presencas />
-           </ProtectedRoute>
-          } />
+        <Route
+          path="/presencas"
+          element={
+            <ProtectedRoute role="adm">
+              <Presencas />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/login" element={
-          <Login />
-        } />
+        <Route path="/login" element={<Login />} />
 
-        <Route path="/aluno" element={
-          <ProtectedRoute role="aluno"> 
-          <AlunoPresenca />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/aluno"
+          element={
+            <ProtectedRoute role="aluno">
+              <AlunoPresenca />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
-    
   );
 }

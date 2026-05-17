@@ -4,8 +4,6 @@ import { Users, BookOpen, UserCheck, TrendingUp } from "lucide-react";
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from "recharts";
 
-import { db } from "../services/Firebase";
-console.log(db);
 const dadosGrafico = [
   {
     nome: "Jan",
@@ -106,8 +104,8 @@ export default function Dashboard() {
             <p className="text-gray-400">Últimos meses</p>
           </div>
 
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full min-h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={dadosGrafico}>
                 <XAxis dataKey="nome" />
 
