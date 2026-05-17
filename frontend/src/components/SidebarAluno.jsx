@@ -1,11 +1,13 @@
 import {
   LayoutDashboard,
-  Users,
+  User,
   BookOpen,
   ClipboardCheck,
   LogIn,
   ChevronLeft,
   ChevronRight,
+  Calendar,
+  Bell,
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
@@ -31,7 +33,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           <div>
             <h1 className="text-2xl font-bold text-white">Catequese</h1>
 
-            <p className="text-gray-400 text-sm">Painel Administrativo</p>
+            <p className="text-gray-400 text-sm">Painel do Catequizando</p>
           </div>
         )}
 
@@ -45,39 +47,30 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
       <nav className="flex flex-col gap-3">
         <Link
-          to="/adm"
+          to="/aluno"
           className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
         >
-          <LayoutDashboard size={20} />
-
-          {!collapsed && "Dashboard"}
-        </Link>
-
-        <Link
-          to="/catequizandos"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <Users size={20} />
-
-          {!collapsed && "Catequizandos"}
-        </Link>
-
-        <Link
-          to="/turmas"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <BookOpen size={20} />
-
-          {!collapsed && "Turmas"}
-        </Link>
-
-        <Link
-          to="/presencas"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <ClipboardCheck size={20} />
+          <Calendar size={20} />
 
           {!collapsed && "Presenças"}
+        </Link>
+
+        <Link
+          to="/avisosAluno"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+        >
+          <Bell size={20} />
+
+          {!collapsed && "Avisos"}
+        </Link>
+
+                <Link
+          to="/InfoAlunos"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+        >
+          <User size={20} />
+
+          {!collapsed && "Minhas Informações"}
         </Link>
 
         <Link
