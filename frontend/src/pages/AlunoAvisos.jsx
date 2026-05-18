@@ -19,7 +19,6 @@ import { db } from "../services/Firebase";
 import { collection, count, query, where, getDocs } from "firebase/firestore";
 console.log(process.env.REACT_APP_PROJECT_ID);
 
-
 export default function Avisos() {
 
   return (
@@ -30,7 +29,6 @@ export default function Avisos() {
           <p className="text-gray-400 mt-1">Mural de Avisos</p>
         </div>
 
-       
         <div className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left text-gray-300">
@@ -49,31 +47,37 @@ export default function Avisos() {
 
                   <td className="px-6 py-4">Primeira Eucaristia</td>
 
-                  <td className="px-6 py-4">A celebração da Primeira Eucaristia será realizada no dia 15 de junho às 10h. Todos os catequizandos devem chegar com 30 minutos de antecedência.</td>
+                  <td className="px-6 py-4">
+                    A celebração da Primeira Eucaristia será realizada no dia 15
+                    de junho às 10h. Todos os catequizandos devem chegar com 30
+                    minutos de antecedência.
+                  </td>
 
                   <td className="px-6 py-4">
-                    <span className="bg-blue-500/20 text-purple-400 px-3 py-1 rounded-full text-sm whitespace-nowrap">
-                      Turma A 
+                    <span className="bg-white-500/20 text-purple-400 px-3 py-1 rounded-full text-sm whitespace-nowrap">
+                      Turma A
                     </span>
                   </td>
                 </tr>
               </tbody>
-                            <tbody>
+              <tbody>
                 <tr className="border-t border-slate-800 hover:bg-slate-900 transition">
                   <td className="px-6 py-4 whitespace-nowrap">02/05/2026</td>
 
                   <td className="px-6 py-4">Informativo</td>
 
-                  <td className="px-6 py-4">Devido ao feriado, não teremos aula no dia 10/05. As aulas retornam normalmente no dia 17/05.</td>
+                  <td className="px-6 py-4">
+                    Devido ao feriado, não teremos aula no dia 10/05. As aulas
+                    retornam normalmente no dia 17/05.
+                  </td>
 
                   <td className="px-6 py-4">
-                    <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm whitespace-nowrap">
-                      Todos 
+                    <span className="bg-white-500/20 text-blue-400 px-3 py-1 rounded-full text-sm whitespace-nowrap">
+                      Todos
                     </span>
                   </td>
                 </tr>
               </tbody>
-              
             </table>
           </div>
         </div>

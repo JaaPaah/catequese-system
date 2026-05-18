@@ -23,6 +23,7 @@ console.log(process.env.REACT_APP_PROJECT_ID);
 export default function Dashboard() {
   const [totalFaltas, setTotalFaltas] = useState(0);
   const [totalPresencas, setTotalPresencas] = useState(0);
+  const [totalAulas, setTotalAulas] = useState(0);
   const faltas = async () => {
     console.log("função rodou");
     const q = query(
@@ -30,11 +31,16 @@ export default function Dashboard() {
       where("AlunoId", "==", 123),
       where("EstaPresente", "==", false),
     );
-
     const querySnapshot = await getDocs(q);
     setTotalFaltas(querySnapshot.size);
   };
-
+  const QtdeAulas = async () => {
+    const q = query(
+        collection(db,"Aula"),
+    );
+    const querySnapshot = await getDocs(q);
+    setTotalAulas(querySnapshot.size);
+  }
   useEffect(() => {
     faltas();
   }, []);
@@ -53,7 +59,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-gray-400 text-sm">Aulas Realizadas</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">24</h2>
+                <h2 className="text-3xl font-bold text-white mt-2">{totalAulas}</h2>
               </div>
 
               <div className="bg-blue-600/20 p-4 rounded-xl">
