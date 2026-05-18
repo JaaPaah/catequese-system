@@ -14,6 +14,8 @@ import AlunoPresenca from "./pages/AlunoPresenca";
 
 import Presencas from "./pages/Presencas";
 
+import Avisos from "./pages/Avisos";
+
 export default function App() {
   localStorage.setItem(
     "user",
@@ -28,6 +30,15 @@ export default function App() {
       <Routes>
         <Route
           path="/"
+          element={
+            <ProtectedRoute role="adm">
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/adm"
           element={
             <ProtectedRoute role="adm">
               <Dashboard />
@@ -62,7 +73,14 @@ export default function App() {
           }
         />
 
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/avisos"
+          element={
+            <ProtectedRoute role="adm">
+              <Avisos />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/aluno"
@@ -72,6 +90,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );

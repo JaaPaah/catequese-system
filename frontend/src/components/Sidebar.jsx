@@ -1,16 +1,54 @@
+import { useState } from "react";
+
+import { Link, useLocation } from "react-router-dom";
+
 import {
   LayoutDashboard,
   Users,
   BookOpen,
   ClipboardCheck,
-  LogIn,
+  Megaphone,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 
-import { Link } from "react-router-dom";
+export default function Sidebar() {
+  const [collapsed, setCollapsed] = useState(false);
 
-export default function Sidebar({ collapsed, setCollapsed }) {
+  const location = useLocation();
+
+  const menuItems = [
+    {
+      nome: "Dashboard",
+      rota: "/adm",
+      icon: LayoutDashboard,
+    },
+
+    {
+      nome: "Catequizandos",
+      rota: "/catequizandos",
+      icon: Users,
+    },
+
+    {
+      nome: "Turmas",
+      rota: "/turmas",
+      icon: BookOpen,
+    },
+
+    {
+      nome: "Presenças",
+      rota: "/presencas",
+      icon: ClipboardCheck,
+    },
+
+    {
+      nome: "Avisos",
+      rota: "/avisos",
+      icon: Megaphone,
+    },
+  ];
+
   return (
     <aside
       className={`
@@ -18,7 +56,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         border-r
         border-slate-800
         min-h-screen
-        p-4
         transition-all
         duration-300
         flex
@@ -26,12 +63,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         ${collapsed ? "w-24" : "w-72"}
       `}
     >
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex items-center justify-between p-6 border-b border-slate-800">
         {!collapsed && (
           <div>
-            <h1 className="text-2xl font-bold text-white">Catequese</h1>
+            <h1 className="text-white text-2xl font-bold">Catequese</h1>
 
-            <p className="text-gray-400 text-sm">Painel Administrativo</p>
+            <p className="text-gray-400 text-sm">Sistema</p>
           </div>
         )}
 
@@ -39,56 +76,55 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           onClick={() => setCollapsed(!collapsed)}
           className="bg-slate-800 hover:bg-slate-700 transition p-2 rounded-lg text-white"
         >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
 
-      <nav className="flex flex-col gap-3">
-        <Link
-          to="/"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <LayoutDashboard size={20} />
+      <nav className="flex-1 p-4 space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
 
-          {!collapsed && "Dashboard"}
-        </Link>
+          const ativo = location.pathname === item.rota;
 
-        <Link
-          to="/catequizandos"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <Users size={20} />
+          return (
+            <Link
+              key={item.rota}
+              to={item.rota}
+              className={`
+                flex
+                items-center
+                gap-3
+                p-4
+                rounded-xl
+                transition
+                font-medium
 
-          {!collapsed && "Catequizandos"}
-        </Link>
+                ${
+                  ativo
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-300 hover:bg-slate-800"
+                }
+              `}
+            >
+              <Icon size={22} />
 
-        <Link
-          to="/turmas"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <BookOpen size={20} />
-
-          {!collapsed && "Turmas"}
-        </Link>
-
-        <Link
-          to="/presencas"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <ClipboardCheck size={20} />
-
-          {!collapsed && "Presenças"}
-        </Link>
-
-        <Link
-          to="/login"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <LogIn size={20} />
-
-          {!collapsed && "Login"}
-        </Link>
+              {!collapsed && <span>{item.nome}</span>}
+            </Link>
+          );
+        })}
       </nav>
+
+      <div className="p-4 border-t border-slate-800">
+        <div className="bg-slate-900 rounded-xl p-4">
+          {!collapsed && (
+            <>
+              <p className="text-white font-semibold">Painel Admin</p>
+
+              <p className="text-gray-400 text-sm mt-1">CatequeseSystem</p>
+            </>
+          )}
+        </div>
+      </div>
     </aside>
   );
 }
