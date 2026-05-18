@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 
 import AlunoPresenca from "./pages/AlunoPresenca";
 
+import AlunoAvisos from "./pages/AlunoAvisos";
+
 import Presencas from "./pages/Presencas";
 
 export default function App() {
@@ -60,7 +62,14 @@ export default function App() {
           <AlunoPresenca />
           </ProtectedRoute>
         } />
+        <Route path="/AlunoAvisos" element={
+          <ProtectedRoute role="aluno"> 
+          <AlunoAvisos />
+          </ProtectedRoute>
+        } />
       </Routes>
+
+      
     </BrowserRouter>
     
   );

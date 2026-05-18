@@ -28,15 +28,15 @@ export default function Dashboard() {
     const q = query(
       collection(db, "Aulas"),
       where("AlunoId", "==", 123),
-      where("EstaPresente", "==", true),
+      where("EstaPresente", "==", false),
     );
 
     const querySnapshot = await getDocs(q);
-    setTotalPresencas(querySnapshot.size);
+    setTotalFaltas(querySnapshot.size);
   };
+
   useEffect(() => {
     faltas();
-    totalPresencas();
   }, []);
   return (
     <MainLayout>
@@ -66,7 +66,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-gray-400 text-sm">Presenças</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">{totalPresencas}</h2>
+                <h2 className="text-3xl font-bold text-white mt-2">1</h2>
               </div>
 
               <div className="bg-green-600/20 p-4 rounded-xl">
