@@ -26,21 +26,25 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       path: "/adm",
     },
+
     {
       nome: "Catequizandos",
       icon: Users,
       path: "/catequizandos",
     },
+
     {
       nome: "Turmas",
       icon: BookOpen,
       path: "/turmas",
     },
+
     {
       nome: "Presenças",
       icon: ClipboardCheck,
       path: "/presencas",
     },
+
     {
       nome: "Avisos",
       icon: Megaphone,
@@ -76,6 +80,7 @@ export default function Sidebar() {
                   rounded-2xl
                   transition
                   font-medium
+                  w-full
 
                   ${
                     active
@@ -86,7 +91,7 @@ export default function Sidebar() {
               >
                 <Icon size={22} />
 
-                {item.nome}
+                <span className="truncate">{item.nome}</span>
               </Link>
             );
           })}
