@@ -1,154 +1,170 @@
+import { useEffect, useState } from "react";
+
 import MainLayout from "../layouts/MainLayoutAluno";
 
-import { useState, useEffect } from "react";
-
-import { Calendar, Check, X, CheckCircle, XCircle } from "lucide-react";
-
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
-console.log(process.env.REACT_APP_PROJECT_ID);
+import { CheckCircle, XCircle, Megaphone, Loader2 } from "lucide-react";
 
-export default function Dashboard() {
-  const [totalFaltas, setTotalFaltas] = useState(0);
+export default function AlunoPresenca() {
+  const [presencas, setPresencas] = useState([]);
 
-  const [totalPresencas, setTotalPresencas] = useState(0);
+  const [avisos, setAvisos] = useState([]);
 
-  async function carregarPresencas() {
-    console.log("função rodou");
+  const [loading, setLoading] = useState(true);
 
-    const q = query(
-      collection(db, "Aulas"),
+  async function carregarDados() {
+    try {
+      const presencasSnapshot = await getDocs(collection(db, "presencas"));
 
-      where("AlunoId", "==", 123),
+      const avisosSnapshot = await getDocs(collection(db, "avisos"));
 
-      where("EstaPresente", "==", true),
-    );
+      const listaPresencas = [];
 
-    const querySnapshot = await getDocs(q);
+      presencasSnapshot.forEach((item) => {
+        listaPresencas.push({
+          id: item.id,
+          ...item.data(),
+        });
+      });
 
-    setTotalPresencas(querySnapshot.size);
+      const listaAvisos = [];
+
+      avisosSnapshot.forEach((item) => {
+        listaAvisos.push({
+          id: item.id,
+          ...item.data(),
+        });
+      });
+
+      setPresencas(listaPresencas);
+
+      setAvisos(listaAvisos);
+    } catch (error) {
+      console.log(error);
+    }
+
+    setLoading(false);
   }
 
   useEffect(() => {
-    carregarPresencas();
+    carregarDados();
   }, []);
+
+  const totalPresencas = presencas.filter((item) => item.presente).length;
+
+  const totalFaltas = presencas.filter((item) => !item.presente).length;
 
   return (
     <MainLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Presenças</h1>
+          <h1 className="text-3xl font-bold text-white">Painel do Aluno</h1>
 
-          <p className="text-gray-400 mt-1">Minhas Presenças</p>
+          <p className="text-gray-400 mt-1">Histórico e avisos</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Aulas Realizadas</p>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin text-blue-500" size={45} />
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+                <div className="flex items-center gap-4">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <CheckCircle className="text-green-400" size={28} />
+                  </div>
 
-                <h2 className="text-3xl font-bold text-white mt-2">24</h2>
+                  <div>
+                    <p className="text-gray-400">Presenças</p>
+
+                    <h2 className="text-3xl font-bold text-white">
+                      {totalPresencas}
+                    </h2>
+                  </div>
+                </div>
               </div>
 
-              <div className="bg-blue-600/20 p-4 rounded-xl">
-                <Calendar size={28} className="text-blue-400" />
+              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+                <div className="flex items-center gap-4">
+                  <div className="bg-red-500/20 p-4 rounded-xl">
+                    <XCircle className="text-red-400" size={28} />
+                  </div>
+
+                  <div>
+                    <p className="text-gray-400">Faltas</p>
+
+                    <h2 className="text-3xl font-bold text-white">
+                      {totalFaltas}
+                    </h2>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Presenças</p>
+            <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+              <h2 className="text-white text-xl font-semibold mb-6">
+                Histórico de Presenças
+              </h2>
 
-                <h2 className="text-3xl font-bold text-white mt-2">
-                  {totalPresencas}
-                </h2>
-              </div>
+              <div className="space-y-4">
+                {presencas.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between"
+                  >
+                    <div>
+                      <h3 className="text-white font-semibold">{item.nome}</h3>
 
-              <div className="bg-green-600/20 p-4 rounded-xl">
-                <Check size={28} className="text-green-400" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Faltas</p>
-
-                <h2 className="text-3xl font-bold text-white mt-2">
-                  {totalFaltas}
-                </h2>
-              </div>
-
-              <div className="bg-orange-600/20 p-4 rounded-xl">
-                <X size={28} className="text-orange-400" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left text-gray-300">
-              <thead className="bg-slate-900 text-gray-400 text-sm uppercase">
-                <tr>
-                  <th className="px-6 py-4">Data</th>
-
-                  <th className="px-6 py-4">Tema</th>
-
-                  <th className="px-6 py-4">Tipo</th>
-
-                  <th className="px-6 py-4">Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                <tr className="border-t border-slate-800 hover:bg-slate-900 transition">
-                  <td className="px-6 py-4 whitespace-nowrap">06/05/2026</td>
-
-                  <td className="px-6 py-4">Os Sacramentos da Igreja</td>
-
-                  <td className="px-6 py-4">
-                    <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm whitespace-nowrap">
-                      Aula
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-green-400 whitespace-nowrap">
-                      <CheckCircle size={18} />
-                      Presente
+                      <p className="text-gray-400 text-sm">{item.turma}</p>
                     </div>
-                  </td>
-                </tr>
 
-                <tr className="border-t border-slate-800 hover:bg-slate-900 transition">
-                  <td className="px-6 py-4 whitespace-nowrap">16/05/2026</td>
+                    {item.presente ? (
+                      <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
+                        Presente
+                      </span>
+                    ) : (
+                      <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm">
+                        Ausente
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                  <td className="px-6 py-4">Missa Dominical</td>
+            <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <Megaphone className="text-blue-400" size={24} />
 
-                  <td className="px-6 py-4">
-                    <span className="bg-blue-500/20 text-purple-400 px-3 py-1 rounded-full text-sm whitespace-nowrap">
-                      Missa
+                <h2 className="text-white text-xl font-semibold">Avisos</h2>
+              </div>
+
+              <div className="space-y-4">
+                {avisos.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-slate-900 border border-slate-800 rounded-xl p-5"
+                  >
+                    <h3 className="text-white font-semibold text-lg">
+                      {item.titulo}
+                    </h3>
+
+                    <p className="text-gray-400 mt-2">{item.mensagem}</p>
+
+                    <span className="inline-block mt-4 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+                      {item.turma}
                     </span>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-red-400 whitespace-nowrap">
-                      <XCircle size={18} />
-                      Ausente
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </MainLayout>
   );

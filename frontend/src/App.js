@@ -17,25 +17,12 @@ import Presencas from "./pages/Presencas";
 import Avisos from "./pages/Avisos";
 
 export default function App() {
-  localStorage.setItem(
-    "user",
-    JSON.stringify({
-      nome: "AdminTeste",
-      role: "adm",
-    }),
-  );
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute role="adm">
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/" element={<Login />} />
+
+        <Route path="/login" element={<Login />} />
 
         <Route
           path="/adm"
@@ -90,8 +77,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
-        <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );
