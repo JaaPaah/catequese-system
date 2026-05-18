@@ -1,43 +1,40 @@
 import MainLayout from "../layouts/MainLayoutAluno";
+
 import { useState, useEffect } from "react";
 
-import {
-  Users,
-  BookOpen,
-  UserCheck,
-  TrendingUp,
-  Calendar,
-  Check,
-  X,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { Calendar, Check, X, CheckCircle, XCircle } from "lucide-react";
 
-import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from "recharts";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
-import { db } from "../services/Firebase";
-import { collection, count, query, where, getDocs } from "firebase/firestore";
+import { db } from "../services/firebase";
+
 console.log(process.env.REACT_APP_PROJECT_ID);
-
 
 export default function Dashboard() {
   const [totalFaltas, setTotalFaltas] = useState(0);
+
   const [totalPresencas, setTotalPresencas] = useState(0);
-  const faltas = async () => {
+
+  async function carregarPresencas() {
     console.log("função rodou");
+
     const q = query(
       collection(db, "Aulas"),
+
       where("AlunoId", "==", 123),
+
       where("EstaPresente", "==", true),
     );
 
     const querySnapshot = await getDocs(q);
+
     setTotalPresencas(querySnapshot.size);
-  };
+  }
+
   useEffect(() => {
-    faltas();
-    totalPresencas();
+    carregarPresencas();
   }, []);
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -61,12 +58,15 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
           <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Presenças</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">{totalPresencas}</h2>
+                <h2 className="text-3xl font-bold text-white mt-2">
+                  {totalPresencas}
+                </h2>
               </div>
 
               <div className="bg-green-600/20 p-4 rounded-xl">
@@ -91,14 +91,18 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
         <div className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left text-gray-300">
               <thead className="bg-slate-900 text-gray-400 text-sm uppercase">
                 <tr>
                   <th className="px-6 py-4">Data</th>
+
                   <th className="px-6 py-4">Tema</th>
+
                   <th className="px-6 py-4">Tipo</th>
+
                   <th className="px-6 py-4">Status</th>
                 </tr>
               </thead>
@@ -122,8 +126,7 @@ export default function Dashboard() {
                     </div>
                   </td>
                 </tr>
-              </tbody>
-              <tbody>
+
                 <tr className="border-t border-slate-800 hover:bg-slate-900 transition">
                   <td className="px-6 py-4 whitespace-nowrap">16/05/2026</td>
 
