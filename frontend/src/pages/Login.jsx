@@ -2,9 +2,15 @@ import { useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { User, Lock, Shield, GraduationCap } from "lucide-react";
+import { User, Lock, Shield, GraduationCap, Loader2 } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
+
+import { signInWithEmailAndPassword } from "firebase/auth";
+
+import { doc, getDoc } from "firebase/firestore";
+
+import { auth, db } from "../services/firebase";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,7 +21,9 @@ export default function Login() {
 
   const [tipo, setTipo] = useState("adm");
 
-  function fazerLogin(e) {
+  const [loading, setLoading] = useState(false);
+
+  async function fazerLogin(e) {
     e.preventDefault();
 
     if (!usuario || !senha) {
@@ -24,22 +32,60 @@ export default function Login() {
       return;
     }
 
-    const user = {
-      nome: usuario,
-      role: tipo,
-    };
+    try {
+      setLoading(true);
 
-    localStorage.setItem("user", JSON.stringify(user));
+      const response = await signInWithEmailAndPassword(auth, usuario, senha);
 
-    toast.success("Login realizado");
+      const uid = response.user.uid;
 
-    setTimeout(() => {
-      if (tipo === "adm") {
-        navigate("/adm");
-      } else {
-        navigate("/aluno");
+      const userRef = doc(db, "usuarios", uid);
+
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        toast.error("Usuário não encontrado");
+
+        setLoading(false);
+
+        return;
       }
-    }, 1000);
+
+      const dadosUsuario = userSnap.data();
+
+      if (dadosUsuario.role !== tipo) {
+        toast.error("Tipo de acesso inválido");
+
+        setLoading(false);
+
+        return;
+      }
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          uid,
+          nome: dadosUsuario.nome,
+          role: dadosUsuario.role,
+        }),
+      );
+
+      toast.success("Login realizado");
+
+      setTimeout(() => {
+        if (dadosUsuario.role === "adm") {
+          navigate("/adm");
+        } else {
+          navigate("/aluno");
+        }
+      }, 1000);
+    } catch (error) {
+      console.log(error);
+
+      toast.error("E-mail ou senha inválidos");
+    }
+
+    setLoading(false);
   }
 
   return (
@@ -115,14 +161,14 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="text-gray-300 text-sm mb-2 block">Usuário</label>
+            <label className="text-gray-300 text-sm mb-2 block">E-mail</label>
 
             <div className="relative">
               <User size={18} className="absolute left-4 top-4 text-gray-400" />
 
               <input
-                type="text"
-                placeholder="Digite seu usuário"
+                type="email"
+                placeholder="Digite seu e-mail"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-blue-500"
@@ -148,9 +194,17 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 transition py-4 rounded-2xl text-white font-bold text-lg"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-500 transition py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-2"
           >
-            Entrar
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                Entrando...
+              </>
+            ) : (
+              "Entrar"
+            )}
           </button>
         </form>
       </div>
