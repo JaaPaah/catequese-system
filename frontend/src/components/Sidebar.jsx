@@ -6,6 +6,7 @@ import {
   Megaphone,
   LogOut,
   Shield,
+  UserPlus,
 } from "lucide-react";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -28,6 +29,12 @@ export default function Sidebar() {
       nome: "Dashboard",
       icon: LayoutDashboard,
       path: "/adm",
+    },
+
+    {
+      nome: "Cadastro",
+      icon: UserPlus,
+      path: "/cadastro",
     },
 
     {

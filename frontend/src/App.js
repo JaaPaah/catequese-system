@@ -20,6 +20,8 @@ import AvisosAluno from "./pages/AvisosAluno";
 
 import NotFound from "./pages/NotFound";
 
+import Cadastro from "./pages/Cadastro";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -69,6 +71,15 @@ export default function App() {
           element={
             <ProtectedRoute role="adm">
               <Avisos />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/cadastro"
+          element={
+            <ProtectedRoute role="adm">
+              <Cadastro />
             </ProtectedRoute>
           }
         />
