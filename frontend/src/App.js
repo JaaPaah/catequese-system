@@ -18,6 +18,8 @@ import Avisos from "./pages/Avisos";
 
 import AvisosAluno from "./pages/AvisosAluno";
 
+import NotFound from "./pages/NotFound";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -88,6 +90,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
