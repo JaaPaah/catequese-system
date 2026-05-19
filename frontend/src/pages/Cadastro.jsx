@@ -16,7 +16,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, addDoc, collection } from "firebase/firestore";
 
 import { auth, db } from "../services/firebase";
 
@@ -48,10 +48,20 @@ export default function Cadastro() {
       const uid = response.user.uid;
 
       await setDoc(doc(db, "usuarios", uid), {
+        uid,
         nome,
         email,
         role,
       });
+
+      if (role === "aluno") {
+        await addDoc(collection(db, "catequizandos"), {
+          uid,
+          nome,
+          email,
+          criadoEm: new Date(),
+        });
+      }
 
       toast.success("Usuário criado com sucesso");
 

@@ -28,7 +28,13 @@ export default function Presencas() {
       querySnapshot.forEach((item) => {
         dados.push({
           id: item.id,
+
+          uid: item.data().uid,
+
           nome: item.data().nome,
+
+          email: item.data().email,
+
           presente: false,
         });
       });
@@ -66,7 +72,11 @@ export default function Presencas() {
         await addDoc(collection(db, "presencas"), {
           alunoId: aluno.id,
 
+          uid: aluno.uid,
+
           nome: aluno.nome,
+
+          email: aluno.email,
 
           turma,
 
@@ -156,21 +166,21 @@ export default function Presencas() {
                       <button
                         onClick={() => togglePresenca(item.id)}
                         className={`
-                            flex
-                            items-center
-                            gap-2
-                            px-4
-                            py-2
-                            rounded-xl
-                            text-white
-                            transition
+                          flex
+                          items-center
+                          gap-2
+                          px-4
+                          py-2
+                          rounded-xl
+                          text-white
+                          transition
 
-                            ${
-                              item.presente
-                                ? "bg-red-600 hover:bg-red-500"
-                                : "bg-green-600 hover:bg-green-500"
-                            }
-                          `}
+                          ${
+                            item.presente
+                              ? "bg-red-600 hover:bg-red-500"
+                              : "bg-green-600 hover:bg-green-500"
+                          }
+                        `}
                       >
                         {item.presente ? (
                           <>
