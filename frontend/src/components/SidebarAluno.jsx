@@ -1,87 +1,87 @@
-import {
-  LayoutDashboard,
-  User,
-  BookOpen,
-  ClipboardCheck,
-  LogIn,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Bell,
-} from "lucide-react";
+import { ClipboardCheck, Megaphone, LogOut } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-export default function Sidebar({ collapsed, setCollapsed }) {
+export default function SidebarAluno() {
+  const location = useLocation();
+
+  const navigate = useNavigate();
+
+  function logout() {
+    localStorage.removeItem("user");
+
+    navigate("/login");
+  }
+
+  const menus = [
+    {
+      nome: "Presenças",
+      icon: ClipboardCheck,
+      path: "/aluno",
+    },
+
+    {
+      nome: "Avisos",
+      icon: Megaphone,
+      path: "/avisos-aluno",
+    },
+  ];
+
   return (
-    <aside
-      className={`
-        bg-[#0f172a]
-        border-r
-        border-slate-800
-        min-h-screen
-        p-4
-        transition-all
-        duration-300
-        flex
-        flex-col
-        ${collapsed ? "w-24" : "w-72"}
-      `}
-    >
-      <div className="flex items-center justify-between mb-10">
-        {!collapsed && (
-          <div>
-            <h1 className="text-2xl font-bold text-white">Catequese</h1>
+    <aside className="w-72 bg-[#0f172a] border-r border-slate-800 min-h-screen flex flex-col justify-between">
+      <div>
+        <div className="p-8">
+          <h1 className="text-3xl font-bold text-white">Catequese</h1>
 
-            <p className="text-gray-400 text-sm">Painel do Catequizando</p>
-          </div>
-        )}
+          <p className="text-gray-400 mt-1">Área do Aluno</p>
+        </div>
 
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="bg-slate-800 hover:bg-slate-700 transition p-2 rounded-lg text-white"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+        <nav className="px-4 space-y-2">
+          {menus.map((item) => {
+            const Icon = item.icon;
+
+            const active = location.pathname === item.path;
+
+            return (
+              <Link
+                key={item.nome}
+                to={item.path}
+                className={`
+                  flex
+                  items-center
+                  gap-4
+                  px-5
+                  py-4
+                  rounded-2xl
+                  transition
+                  font-medium
+                  w-full
+
+                  ${
+                    active
+                      ? "bg-green-600 text-white"
+                      : "text-gray-300 hover:bg-slate-800"
+                  }
+                `}
+              >
+                <Icon size={22} />
+
+                <span className="truncate">{item.nome}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
-      <nav className="flex flex-col gap-3">
-        <Link
-          to="/aluno"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
+      <div className="p-4">
+        <button
+          onClick={logout}
+          className="w-full bg-red-600 hover:bg-red-500 transition rounded-2xl py-4 text-white font-semibold flex items-center justify-center gap-3"
         >
-          <Calendar size={20} />
-
-          {!collapsed && "Presenças"}
-        </Link>
-
-        <Link
-          to="/avisosAluno"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <Bell size={20} />
-
-          {!collapsed && "Avisos"}
-        </Link>
-
-                <Link
-          to="/InfoAlunos"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <User size={20} />
-
-          {!collapsed && "Minhas Informações"}
-        </Link>
-
-        <Link
-          to="/login"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
-        >
-          <LogIn size={20} />
-
-          {!collapsed && "Login"}
-        </Link>
-      </nav>
+          <LogOut size={20} />
+          Sair
+        </button>
+      </div>
     </aside>
   );
 }

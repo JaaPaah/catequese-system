@@ -16,6 +16,8 @@ import Presencas from "./pages/Presencas";
 
 import Avisos from "./pages/Avisos";
 
+import AvisosAluno from "./pages/AvisosAluno";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -74,6 +76,15 @@ export default function App() {
           element={
             <ProtectedRoute role="aluno">
               <AlunoPresenca />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/avisos-aluno"
+          element={
+            <ProtectedRoute role="aluno">
+              <AvisosAluno />
             </ProtectedRoute>
           }
         />
