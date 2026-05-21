@@ -2,26 +2,34 @@ import { useEffect, useState } from "react";
 
 import MainLayout from "../layouts/MainLayout";
 
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
-import { CheckCircle, XCircle, Loader2, Save } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, Save, BookOpen } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Presencas() {
+  const [todosCatequizandos, setTodosCatequizandos] = useState([]);
+
   const [catequizandos, setCatequizandos] = useState([]);
+
+  const [turmas, setTurmas] = useState([]);
+
+  const [turmaSelecionada, setTurmaSelecionada] = useState("");
 
   const [loading, setLoading] = useState(false);
 
-  async function carregarCatequizandos() {
+  async function carregarDados() {
     setLoading(true);
 
     try {
       const querySnapshot = await getDocs(collection(db, "catequizandos"));
 
       const dados = [];
+
+      const listaTurmas = [];
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
@@ -33,16 +41,30 @@ export default function Presencas() {
           turma: data.turma || "",
           presente: false,
         });
+
+        if (data.turma && !listaTurmas.includes(data.turma)) {
+          listaTurmas.push(data.turma);
+        }
       });
 
-      setCatequizandos(dados);
+      setTodosCatequizandos(dados);
+
+      setTurmas(listaTurmas);
     } catch (error) {
       console.log(error);
 
-      toast.error("Erro ao carregar catequizandos");
+      toast.error("Erro ao carregar dados");
     }
 
     setLoading(false);
+  }
+
+  function filtrarTurma(turma) {
+    setTurmaSelecionada(turma);
+
+    const filtrados = todosCatequizandos.filter((item) => item.turma === turma);
+
+    setCatequizandos(filtrados);
   }
 
   function togglePresenca(id) {
@@ -59,19 +81,38 @@ export default function Presencas() {
   }
 
   async function salvarPresencas() {
+    if (!turmaSelecionada) {
+      toast.error("Selecione uma turma");
+
+      return;
+    }
+
     try {
-      const promises = catequizandos.map((aluno) =>
-        addDoc(collection(db, "presencas"), {
+      const hoje = new Date().toISOString().split("T")[0];
+
+      for (const aluno of catequizandos) {
+        const q = query(
+          collection(db, "presencas"),
+          where("uid", "==", aluno.uid),
+          where("dataString", "==", hoje),
+        );
+
+        const snapshot = await getDocs(q);
+
+        if (!snapshot.empty) {
+          continue;
+        }
+
+        await addDoc(collection(db, "presencas"), {
           alunoId: aluno.id,
           uid: aluno.uid,
           nome: aluno.nome,
           turma: aluno.turma,
           presente: aluno.presente,
           data: new Date(),
-        }),
-      );
-
-      await Promise.all(promises);
+          dataString: hoje,
+        });
+      }
 
       toast.success("Presenças salvas");
     } catch (error) {
@@ -82,7 +123,7 @@ export default function Presencas() {
   }
 
   useEffect(() => {
-    carregarCatequizandos();
+    carregarDados();
   }, []);
 
   return (
@@ -98,6 +139,33 @@ export default function Presencas() {
           <p className="text-gray-400 mt-1">Gerencie presenças da turma</p>
         </div>
 
+        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+          <label className="text-gray-300 text-sm mb-3 block">
+            Selecionar Turma
+          </label>
+
+          <div className="relative">
+            <BookOpen
+              size={18}
+              className="absolute left-4 top-4 text-gray-400"
+            />
+
+            <select
+              value={turmaSelecionada}
+              onChange={(e) => filtrarTurma(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl py-4 pl-12 pr-4 text-white outline-none"
+            >
+              <option value="">Selecione uma turma</option>
+
+              {turmas.map((turma) => (
+                <option key={turma} value={turma}>
+                  {turma}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-10">
@@ -109,10 +177,6 @@ export default function Presencas() {
                 <tr>
                   <th className="text-left text-gray-400 font-medium p-5">
                     Catequizando
-                  </th>
-
-                  <th className="text-left text-gray-400 font-medium p-5">
-                    Turma
                   </th>
 
                   <th className="text-left text-gray-400 font-medium p-5">
@@ -132,8 +196,6 @@ export default function Presencas() {
                     className="border-t border-slate-800 hover:bg-slate-900 transition"
                   >
                     <td className="p-5 text-white">{item.nome}</td>
-
-                    <td className="p-5 text-gray-300">{item.turma}</td>
 
                     <td className="p-5">
                       {item.presente ? (

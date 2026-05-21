@@ -6,7 +6,13 @@ import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
-import { CheckCircle, XCircle, Megaphone, Loader2 } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Megaphone,
+  Loader2,
+  CalendarDays,
+} from "lucide-react";
 
 export default function AlunoPresenca() {
   const [presencas, setPresencas] = useState([]);
@@ -36,6 +42,12 @@ export default function AlunoPresenca() {
         }
       });
 
+      listaPresencas.sort((a, b) => {
+        return (
+          new Date(b.data?.seconds * 1000) - new Date(a.data?.seconds * 1000)
+        );
+      });
+
       const listaAvisos = [];
 
       avisosSnapshot.forEach((doc) => {
@@ -62,6 +74,14 @@ export default function AlunoPresenca() {
   const totalPresencas = presencas.filter((item) => item.presente).length;
 
   const totalFaltas = presencas.filter((item) => !item.presente).length;
+
+  function formatarData(timestamp) {
+    if (!timestamp) return "Sem data";
+
+    const data = new Date(timestamp.seconds * 1000);
+
+    return data.toLocaleDateString("pt-BR");
+  }
 
   return (
     <MainLayout>
@@ -126,25 +146,35 @@ export default function AlunoPresenca() {
                   presencas.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between"
+                      className="bg-slate-900 border border-slate-800 rounded-xl p-5"
                     >
-                      <div>
-                        <h3 className="text-white font-semibold">
-                          {item.nome}
-                        </h3>
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                          <h3 className="text-white font-semibold">
+                            {item.nome}
+                          </h3>
 
-                        <p className="text-gray-400 text-sm">{item.turma}</p>
+                          <p className="text-gray-400 text-sm mt-1">
+                            {item.turma}
+                          </p>
+
+                          <div className="flex items-center gap-2 mt-3 text-gray-400 text-sm">
+                            <CalendarDays size={16} />
+
+                            {formatarData(item.data)}
+                          </div>
+                        </div>
+
+                        {item.presente ? (
+                          <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
+                            Presente
+                          </span>
+                        ) : (
+                          <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm">
+                            Ausente
+                          </span>
+                        )}
                       </div>
-
-                      {item.presente ? (
-                        <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
-                          Presente
-                        </span>
-                      ) : (
-                        <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm">
-                          Ausente
-                        </span>
-                      )}
                     </div>
                   ))
                 )}
