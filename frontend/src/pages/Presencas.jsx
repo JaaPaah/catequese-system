@@ -2,17 +2,15 @@ import { useEffect, useState } from "react";
 
 import MainLayout from "../layouts/MainLayout";
 
-import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
-import { CheckCircle, XCircle, Loader2, Save, BookOpen } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, Save } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Presencas() {
-  const [todosCatequizandos, setTodosCatequizandos] = useState([]);
-
   const [catequizandos, setCatequizandos] = useState([]);
 
   const [turmas, setTurmas] = useState([]);
@@ -21,7 +19,34 @@ export default function Presencas() {
 
   const [loading, setLoading] = useState(false);
 
-  async function carregarDados() {
+  async function carregarTurmas() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "turmas"));
+
+      const lista = [];
+
+      querySnapshot.forEach((doc) => {
+        lista.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      setTurmas(lista);
+    } catch (error) {
+      console.log(error);
+
+      toast.error("Erro ao carregar turmas");
+    }
+  }
+
+  async function carregarCatequizandos(turma) {
+    if (!turma) {
+      setCatequizandos([]);
+
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -29,42 +54,31 @@ export default function Presencas() {
 
       const dados = [];
 
-      const listaTurmas = [];
+      querySnapshot.forEach((item) => {
+        const data = item.data();
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-
-        dados.push({
-          id: doc.id,
-          uid: data.uid || "",
-          nome: data.nome || "",
-          turma: data.turma || "",
-          presente: false,
-        });
-
-        if (data.turma && !listaTurmas.includes(data.turma)) {
-          listaTurmas.push(data.turma);
+        if (
+          data.turma &&
+          data.turma.toLowerCase().trim() === turma.toLowerCase().trim()
+        ) {
+          dados.push({
+            id: item.id,
+            uid: data.uid || "",
+            nome: data.nome,
+            turma: data.turma,
+            presente: false,
+          });
         }
       });
 
-      setTodosCatequizandos(dados);
-
-      setTurmas(listaTurmas);
+      setCatequizandos(dados);
     } catch (error) {
       console.log(error);
 
-      toast.error("Erro ao carregar dados");
+      toast.error("Erro ao carregar catequizandos");
     }
 
     setLoading(false);
-  }
-
-  function filtrarTurma(turma) {
-    setTurmaSelecionada(turma);
-
-    const filtrados = todosCatequizandos.filter((item) => item.turma === turma);
-
-    setCatequizandos(filtrados);
   }
 
   function togglePresenca(id) {
@@ -88,29 +102,19 @@ export default function Presencas() {
     }
 
     try {
-      const hoje = new Date().toISOString().split("T")[0];
-
       for (const aluno of catequizandos) {
-        const q = query(
-          collection(db, "presencas"),
-          where("uid", "==", aluno.uid),
-          where("dataString", "==", hoje),
-        );
-
-        const snapshot = await getDocs(q);
-
-        if (!snapshot.empty) {
-          continue;
-        }
-
         await addDoc(collection(db, "presencas"), {
           alunoId: aluno.id,
-          uid: aluno.uid,
+
+          uid: aluno.uid || "",
+
           nome: aluno.nome,
+
           turma: aluno.turma,
+
           presente: aluno.presente,
+
           data: new Date(),
-          dataString: hoje,
         });
       }
 
@@ -123,7 +127,7 @@ export default function Presencas() {
   }
 
   useEffect(() => {
-    carregarDados();
+    carregarTurmas();
   }, []);
 
   return (
@@ -139,37 +143,38 @@ export default function Presencas() {
           <p className="text-gray-400 mt-1">Gerencie presenças da turma</p>
         </div>
 
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+        <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6">
           <label className="text-gray-300 text-sm mb-3 block">
-            Selecionar Turma
+            Selecione a turma
           </label>
 
-          <div className="relative">
-            <BookOpen
-              size={18}
-              className="absolute left-4 top-4 text-gray-400"
-            />
+          <select
+            value={turmaSelecionada}
+            onChange={(e) => {
+              setTurmaSelecionada(e.target.value);
 
-            <select
-              value={turmaSelecionada}
-              onChange={(e) => filtrarTurma(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl py-4 pl-12 pr-4 text-white outline-none"
-            >
-              <option value="">Selecione uma turma</option>
+              carregarCatequizandos(e.target.value);
+            }}
+            className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-4 text-white outline-none"
+          >
+            <option value="">Selecione...</option>
 
-              {turmas.map((turma) => (
-                <option key={turma} value={turma}>
-                  {turma}
-                </option>
-              ))}
-            </select>
-          </div>
+            {turmas.map((turma) => (
+              <option key={turma.id} value={turma.nome}>
+                {turma.nome}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="animate-spin text-blue-500" size={40} />
+            </div>
+          ) : catequizandos.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              Nenhum catequizando encontrado
             </div>
           ) : (
             <table className="w-full">
@@ -251,7 +256,7 @@ export default function Presencas() {
 
         <button
           onClick={salvarPresencas}
-          className="bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-2xl text-white font-semibold flex items-center gap-2"
         >
           <Save size={18} />
           Salvar Presenças
