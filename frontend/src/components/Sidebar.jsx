@@ -6,7 +6,6 @@ import {
   Megaphone,
   LogOut,
   Shield,
-  UserPlus,
 } from "lucide-react";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -24,17 +23,11 @@ export default function Sidebar() {
     navigate("/");
   }
 
-  const menus = [
+  const adminMenus = [
     {
       nome: "Dashboard",
       icon: LayoutDashboard,
       path: "/adm",
-    },
-
-    {
-      nome: "Cadastro",
-      icon: UserPlus,
-      path: "/cadastro",
     },
 
     {
@@ -62,6 +55,22 @@ export default function Sidebar() {
     },
   ];
 
+  const alunoMenus = [
+    {
+      nome: "Minhas Presenças",
+      icon: ClipboardCheck,
+      path: "/aluno",
+    },
+
+    {
+      nome: "Avisos",
+      icon: Megaphone,
+      path: "/avisos-aluno",
+    },
+  ];
+
+  const menus = user?.role === "adm" ? adminMenus : alunoMenus;
+
   return (
     <aside className="w-72 bg-[#0f172a] border-r border-slate-800 min-h-screen flex flex-col justify-between">
       <div>
@@ -74,7 +83,11 @@ export default function Sidebar() {
             <div>
               <h1 className="text-2xl font-bold text-white">Catequese</h1>
 
-              <p className="text-gray-400 text-sm">Sistema Administrativo</p>
+              <p className="text-gray-400 text-sm">
+                {user?.role === "adm"
+                  ? "Sistema Administrativo"
+                  : "Portal do Aluno"}
+              </p>
             </div>
           </div>
         </div>
@@ -84,11 +97,17 @@ export default function Sidebar() {
             <p className="text-gray-400 text-sm">Usuário logado</p>
 
             <h2 className="text-white font-bold text-lg mt-1">
-              {user?.nome || "Administrador"}
+              {user?.nome || "Usuário"}
             </h2>
 
-            <span className="inline-block mt-3 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-              Administrador
+            <span
+              className={`inline-block mt-3 px-3 py-1 rounded-full text-sm ${
+                user?.role === "adm"
+                  ? "bg-blue-500/20 text-blue-400"
+                  : "bg-green-500/20 text-green-400"
+              }`}
+            >
+              {user?.role === "adm" ? "Administrador" : "Aluno"}
             </span>
           </div>
 

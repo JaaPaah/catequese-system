@@ -1,54 +1,61 @@
 import { useEffect, useState } from "react";
 
-import MainLayoutAluno from "../layouts/MainLayoutAluno";
+import MainLayout from "../layouts/MainLayout";
 
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
-import { Megaphone, Loader2 } from "lucide-react";
+import { Megaphone } from "lucide-react";
+
+import toast, { Toaster } from "react-hot-toast";
 
 export default function AvisosAluno() {
   const [avisos, setAvisos] = useState([]);
-
-  const [loading, setLoading] = useState(true);
 
   async function carregarAvisos() {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
 
-      const usuariosSnapshot = await getDocs(
-        query(collection(db, "usuarios"), where("email", "==", user.email)),
-      );
+      if (!user?.turma) {
+        toast.error("Aluno sem turma cadastrada");
 
-      let turmaAluno = "";
+        return;
+      }
 
-      usuariosSnapshot.forEach((doc) => {
-        turmaAluno = doc.data().turma;
-      });
-
-      const avisosQuery = query(
-        collection(db, "avisos"),
-        where("turma", "==", turmaAluno),
-      );
-
-      const avisosSnapshot = await getDocs(avisosQuery);
+      const snapshot = await getDocs(collection(db, "avisos"));
 
       const lista = [];
 
-      avisosSnapshot.forEach((doc) => {
-        lista.push({
+      snapshot.forEach((doc) => {
+        const aviso = {
           id: doc.id,
           ...doc.data(),
-        });
+        };
+
+        if (aviso.turma === "GERAL" || aviso.turma === user.turma) {
+          lista.push(aviso);
+        }
+      });
+
+      lista.sort((a, b) => {
+        if (!a.data || !b.data) return 0;
+
+        return b.data.seconds - a.data.seconds;
       });
 
       setAvisos(lista);
     } catch (error) {
       console.log(error);
-    }
 
-    setLoading(false);
+      toast.error("Erro ao carregar avisos");
+    }
+  }
+
+  function formatarData(data) {
+    if (!data) return "";
+
+    return data.toDate().toLocaleDateString("pt-BR");
   }
 
   useEffect(() => {
@@ -56,47 +63,57 @@ export default function AvisosAluno() {
   }, []);
 
   return (
-    <MainLayoutAluno>
+    <MainLayout>
+      <Toaster position="top-right" />
+
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Avisos da Turma</h1>
+          <h1 className="text-3xl font-bold text-white">Avisos</h1>
 
-          <p className="text-gray-400 mt-1">Comunicados importantes</p>
+          <p className="text-gray-400 mt-2">Avisos da sua turma</p>
         </div>
 
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-          {loading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin text-blue-500" size={40} />
-            </div>
-          ) : avisos.length === 0 ? (
-            <div className="text-center py-10">
-              <Megaphone className="mx-auto text-gray-500 mb-4" size={50} />
+        {avisos.length === 0 ? (
+          <div className="bg-[#111827] border border-slate-800 rounded-3xl p-10 text-center">
+            <p className="text-gray-400">Nenhum aviso disponível</p>
+          </div>
+        ) : (
+          <div className="grid gap-5">
+            {avisos.map((item) => (
+              <div
+                key={item.id}
+                className="bg-[#111827] border border-slate-800 rounded-3xl p-6"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center">
+                      <Megaphone className="text-white" size={26} />
+                    </div>
 
-              <p className="text-gray-400">Nenhum aviso encontrado</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {avisos.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-slate-900 border border-slate-800 rounded-xl p-5"
-                >
-                  <h2 className="text-white text-xl font-semibold">
-                    {item.titulo}
-                  </h2>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">
+                        {item.titulo}
+                      </h2>
 
-                  <p className="text-gray-400 mt-3">{item.mensagem}</p>
+                      <p className="text-gray-400 mt-2">{item.descricao}</p>
+                    </div>
+                  </div>
 
-                  <span className="inline-block mt-4 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+                  <span className="text-gray-500 text-sm">
+                    {formatarData(item.data)}
+                  </span>
+                </div>
+
+                <div className="mt-5">
+                  <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
                     {item.turma}
                   </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </MainLayoutAluno>
+    </MainLayout>
   );
 }
