@@ -1,233 +1,247 @@
 import { useEffect, useState } from "react";
 
-import MainLayout from "../layouts/MainLayoutAluno";
+import MainLayout from "../layouts/MainLayout";
 
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
 import {
+  ClipboardCheck,
   CheckCircle,
   XCircle,
-  Megaphone,
-  Loader2,
-  CalendarDays,
+  AlertTriangle,
 } from "lucide-react";
+
+import toast, { Toaster } from "react-hot-toast";
 
 export default function AlunoPresenca() {
   const [presencas, setPresencas] = useState([]);
 
-  const [avisos, setAvisos] = useState([]);
-
   const [loading, setLoading] = useState(true);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [estatisticas, setEstatisticas] = useState({
+    total: 0,
+    presentes: 0,
+    faltas: 0,
+    porcentagem: 0,
+  });
 
-  async function carregarDados() {
+  async function carregarPresencas() {
     try {
-      const q = query(
-        collection(db, "presencas"),
-        where("uid", "==", user.uid),
-      );
+      const user = JSON.parse(localStorage.getItem("user"));
 
-      const presencasSnapshot = await getDocs(q);
+      const snapshot = await getDocs(collection(db, "presencas"));
 
-      const listaPresencas = [];
+      const lista = [];
 
-      presencasSnapshot.forEach((item) => {
-        listaPresencas.push({
-          id: item.id,
-          ...item.data(),
-        });
+      let presentes = 0;
+
+      let faltas = 0;
+
+      snapshot.forEach((doc) => {
+        const item = {
+          id: doc.id,
+          ...doc.data(),
+        };
+
+        const mesmoAluno = item.alunoId === user.uid || item.nome === user.nome;
+
+        if (mesmoAluno) {
+          lista.push(item);
+
+          if (item.presente) {
+            presentes++;
+          } else {
+            faltas++;
+          }
+        }
       });
 
-      listaPresencas.sort((a, b) => {
+      lista.sort((a, b) => {
         if (!a.data || !b.data) return 0;
 
         return b.data.seconds - a.data.seconds;
       });
 
-      setPresencas(listaPresencas);
+      const total = presentes + faltas;
 
-      let turmaAluno = "";
+      const porcentagem = total > 0 ? Math.round((presentes / total) * 100) : 0;
 
-      if (listaPresencas.length > 0) {
-        turmaAluno = listaPresencas[0].turma;
-      }
-
-      const avisosSnapshot = await getDocs(collection(db, "avisos"));
-
-      const listaAvisos = [];
-
-      avisosSnapshot.forEach((item) => {
-        const data = item.data();
-
-        if (
-          data.turma &&
-          turmaAluno &&
-          data.turma.toLowerCase().trim() === turmaAluno.toLowerCase().trim()
-        ) {
-          listaAvisos.push({
-            id: item.id,
-            ...data,
-          });
-        }
+      setEstatisticas({
+        total,
+        presentes,
+        faltas,
+        porcentagem,
       });
 
-      setAvisos(listaAvisos);
+      setPresencas(lista);
     } catch (error) {
       console.log(error);
+
+      toast.error("Erro ao carregar presenças");
     }
 
     setLoading(false);
   }
 
-  useEffect(() => {
-    carregarDados();
-  }, []);
-
-  const totalPresencas = presencas.filter((item) => item.presente).length;
-
-  const totalFaltas = presencas.filter((item) => !item.presente).length;
-
   function formatarData(data) {
     if (!data) return "";
 
-    const novaData = data.toDate();
-
-    return novaData.toLocaleDateString("pt-BR");
+    return data.toDate().toLocaleDateString("pt-BR");
   }
+
+  function statusFrequencia() {
+    if (estatisticas.porcentagem >= 75) {
+      return {
+        texto: "Boa frequência",
+        cor: "text-green-400",
+        bg: "bg-green-500/20",
+      };
+    }
+
+    if (estatisticas.porcentagem >= 50) {
+      return {
+        texto: "Atenção",
+        cor: "text-yellow-400",
+        bg: "bg-yellow-500/20",
+      };
+    }
+
+    return {
+      texto: "Risco de frequência baixa",
+      cor: "text-red-400",
+      bg: "bg-red-500/20",
+    };
+  }
+
+  useEffect(() => {
+    carregarPresencas();
+  }, []);
+
+  const status = statusFrequencia();
 
   return (
     <MainLayout>
+      <Toaster position="top-right" />
+
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Painel do Aluno</h1>
+          <h1 className="text-3xl font-bold text-white">Minhas Presenças</h1>
 
-          <p className="text-gray-400 mt-1">Histórico e avisos</p>
+          <p className="text-gray-400 mt-2">Histórico completo de frequência</p>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin text-blue-500" size={45} />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6">
+            <p className="text-gray-400 text-sm">Total</p>
+
+            <h2 className="text-4xl font-bold text-white mt-3">
+              {estatisticas.total}
+            </h2>
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-green-500/20 p-4 rounded-xl">
-                    <CheckCircle className="text-green-400" size={28} />
-                  </div>
 
-                  <div>
-                    <p className="text-gray-400">Presenças</p>
+          <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6">
+            <p className="text-gray-400 text-sm">Presenças</p>
 
-                    <h2 className="text-3xl font-bold text-white">
-                      {totalPresencas}
-                    </h2>
-                  </div>
-                </div>
-              </div>
+            <h2 className="text-4xl font-bold text-green-400 mt-3">
+              {estatisticas.presentes}
+            </h2>
+          </div>
 
-              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-red-500/20 p-4 rounded-xl">
-                    <XCircle className="text-red-400" size={28} />
-                  </div>
+          <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6">
+            <p className="text-gray-400 text-sm">Faltas</p>
 
-                  <div>
-                    <p className="text-gray-400">Faltas</p>
+            <h2 className="text-4xl font-bold text-red-400 mt-3">
+              {estatisticas.faltas}
+            </h2>
+          </div>
 
-                    <h2 className="text-3xl font-bold text-white">
-                      {totalFaltas}
-                    </h2>
-                  </div>
-                </div>
-              </div>
+          <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6">
+            <p className="text-gray-400 text-sm">Frequência</p>
+
+            <h2 className="text-4xl font-bold text-blue-400 mt-3">
+              {estatisticas.porcentagem}%
+            </h2>
+          </div>
+        </div>
+
+        <div
+          className={`${status.bg} border border-slate-800 rounded-3xl p-6 flex items-center gap-4`}
+        >
+          <AlertTriangle className={status.cor} size={28} />
+
+          <div>
+            <h2 className={`font-bold text-xl ${status.cor}`}>
+              {status.texto}
+            </h2>
+
+            <p className="text-gray-300 mt-1">
+              Sua frequência atual é de {estatisticas.porcentagem}%
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden">
+          <div className="p-6 border-b border-slate-800">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+              <ClipboardCheck size={24} />
+              Histórico
+            </h2>
+          </div>
+
+          {loading ? (
+            <div className="p-10 text-center text-gray-400">Carregando...</div>
+          ) : presencas.length === 0 ? (
+            <div className="p-10 text-center text-gray-400">
+              Nenhuma presença encontrada
             </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-slate-900">
+                <tr>
+                  <th className="text-left text-gray-400 font-medium p-5">
+                    Data
+                  </th>
 
-            <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <CalendarDays className="text-blue-400" size={24} />
+                  <th className="text-left text-gray-400 font-medium p-5">
+                    Turma
+                  </th>
 
-                <h2 className="text-white text-xl font-semibold">
-                  Histórico de Presenças
-                </h2>
-              </div>
+                  <th className="text-left text-gray-400 font-medium p-5">
+                    Status
+                  </th>
+                </tr>
+              </thead>
 
-              <div className="space-y-4">
-                {presencas.length === 0 ? (
-                  <div className="text-gray-400 text-center py-10">
-                    Nenhuma presença encontrada
-                  </div>
-                ) : (
-                  presencas.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between"
-                    >
-                      <div>
-                        <h3 className="text-white font-semibold">
-                          {item.turma}
-                        </h3>
+              <tbody>
+                {presencas.map((item) => (
+                  <tr key={item.id} className="border-t border-slate-800">
+                    <td className="p-5 text-white">
+                      {formatarData(item.data)}
+                    </td>
 
-                        <p className="text-gray-400 text-sm mt-1">
-                          {formatarData(item.data)}
-                        </p>
-                      </div>
+                    <td className="p-5 text-gray-300">{item.turma}</td>
 
+                    <td className="p-5">
                       {item.presente ? (
-                        <span className="bg-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm">
+                        <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm flex items-center gap-2 w-fit">
+                          <CheckCircle size={16} />
                           Presente
                         </span>
                       ) : (
-                        <span className="bg-red-500/20 text-red-400 px-4 py-2 rounded-full text-sm">
-                          Ausente
+                        <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm flex items-center gap-2 w-fit">
+                          <XCircle size={16} />
+                          Falta
                         </span>
                       )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Megaphone className="text-blue-400" size={24} />
-
-                <h2 className="text-white text-xl font-semibold">
-                  Avisos da Turma
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                {avisos.length === 0 ? (
-                  <div className="text-gray-400 text-center py-10">
-                    Nenhum aviso encontrado
-                  </div>
-                ) : (
-                  avisos.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-slate-900 border border-slate-800 rounded-xl p-5"
-                    >
-                      <h3 className="text-white font-semibold text-lg">
-                        {item.titulo}
-                      </h3>
-
-                      <p className="text-gray-400 mt-2">{item.mensagem}</p>
-
-                      <span className="inline-block mt-4 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-                        {item.turma}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </>
-        )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </MainLayout>
   );
