@@ -8,11 +8,11 @@ import {
   ClipboardCheck,
   Megaphone,
   Loader2,
-  CheckCircle,
+  TrendingUp,
   XCircle,
 } from "lucide-react";
 
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
@@ -23,12 +23,10 @@ export default function Dashboard() {
     catequizandos: 0,
     turmas: 0,
     presencas: 0,
-    avisos: 0,
-    presentes: 0,
     faltas: 0,
+    avisos: 0,
+    percentual: 0,
   });
-
-  const [ultimosAvisos, setUltimosAvisos] = useState([]);
 
   async function carregarDados() {
     try {
@@ -40,46 +38,34 @@ export default function Dashboard() {
 
       const avisosSnap = await getDocs(collection(db, "avisos"));
 
-      let presentes = 0;
+      let totalPresencas = 0;
 
-      let faltas = 0;
+      let totalFaltas = 0;
 
       presencasSnap.forEach((doc) => {
         const data = doc.data();
 
         if (data.presente) {
-          presentes++;
+          totalPresencas++;
         } else {
-          faltas++;
+          totalFaltas++;
         }
       });
 
-      const avisosQuery = query(
-        collection(db, "avisos"),
-        orderBy("createdAt", "desc"),
-        limit(5),
-      );
+      const totalRegistros = totalPresencas + totalFaltas;
 
-      const avisosRecentes = await getDocs(avisosQuery);
-
-      const listaAvisos = [];
-
-      avisosRecentes.forEach((doc) => {
-        listaAvisos.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-
-      setUltimosAvisos(listaAvisos);
+      const percentual =
+        totalRegistros > 0
+          ? Math.round((totalPresencas / totalRegistros) * 100)
+          : 0;
 
       setDados({
         catequizandos: catequizandosSnap.size,
         turmas: turmasSnap.size,
-        presencas: presencasSnap.size,
+        presencas: totalPresencas,
+        faltas: totalFaltas,
         avisos: avisosSnap.size,
-        presentes,
-        faltas,
+        percentual,
       });
     } catch (error) {
       console.log(error);
@@ -115,6 +101,13 @@ export default function Dashboard() {
     },
 
     {
+      titulo: "Faltas",
+      valor: dados.faltas,
+      icon: XCircle,
+      cor: "bg-red-600",
+    },
+
+    {
       titulo: "Avisos",
       valor: dados.avisos,
       icon: Megaphone,
@@ -122,17 +115,10 @@ export default function Dashboard() {
     },
 
     {
-      titulo: "Presentes",
-      valor: dados.presentes,
-      icon: CheckCircle,
-      cor: "bg-emerald-600",
-    },
-
-    {
-      titulo: "Faltas",
-      valor: dados.faltas,
-      icon: XCircle,
-      cor: "bg-red-600",
+      titulo: "Taxa de Presença",
+      valor: `${dados.percentual}%`,
+      icon: TrendingUp,
+      cor: "bg-cyan-600",
     },
   ];
 
@@ -183,37 +169,23 @@ export default function Dashboard() {
             </div>
 
             <div className="bg-[#111827] border border-slate-800 rounded-3xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <Megaphone className="text-blue-400" />
+              <h2 className="text-2xl font-bold text-white mb-3">
+                Desempenho Geral
+              </h2>
 
-                <h2 className="text-2xl font-bold text-white">
-                  Últimos Avisos
-                </h2>
-              </div>
+              <p className="text-gray-400 mb-6">
+                Taxa geral de presença dos catequizandos
+              </p>
 
-              <div className="space-y-4">
-                {ultimosAvisos.length === 0 ? (
-                  <p className="text-gray-400">Nenhum aviso encontrado</p>
-                ) : (
-                  ultimosAvisos.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-slate-900 border border-slate-800 rounded-2xl p-5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-white font-bold text-lg">
-                          {item.titulo}
-                        </h3>
-
-                        <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-                          {item.turma}
-                        </span>
-                      </div>
-
-                      <p className="text-gray-400 mt-3">{item.mensagem}</p>
-                    </div>
-                  ))
-                )}
+              <div className="w-full bg-slate-800 rounded-full h-8 overflow-hidden">
+                <div
+                  className="bg-cyan-500 h-8 flex items-center justify-center text-white font-bold transition-all"
+                  style={{
+                    width: `${dados.percentual}%`,
+                  }}
+                >
+                  {dados.percentual}%
+                </div>
               </div>
             </div>
           </>
