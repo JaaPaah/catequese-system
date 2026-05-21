@@ -68,6 +68,7 @@ export default function Login() {
           nome: dadosUsuario.nome,
           email: dadosUsuario.email,
           role: dadosUsuario.role,
+          turma: dadosUsuario.turma || "",
         }),
       );
 
