@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import MainLayout from "../layouts/MainLayout";
 
@@ -10,19 +10,13 @@ import {
   GraduationCap,
   Shield,
   Loader2,
-  BookOpen,
 } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
-import {
-  doc,
-  setDoc,
-  addDoc,
-  collection,
-} from "firebase/firestore";
+import { doc, setDoc, collection, getDocs, addDoc } from "firebase/firestore";
 
 import { auth, db } from "../services/firebase";
 
@@ -37,7 +31,32 @@ export default function Cadastro() {
 
   const [turma, setTurma] = useState("");
 
+  const [turmas, setTurmas] = useState([]);
+
   const [loading, setLoading] = useState(false);
+
+  async function carregarTurmas() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "turmas"));
+
+      const lista = [];
+
+      querySnapshot.forEach((doc) => {
+        lista.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      setTurmas(lista);
+    } catch {
+      toast.error("Erro ao carregar turmas");
+    }
+  }
+
+  useEffect(() => {
+    carregarTurmas();
+  }, []);
 
   async function cadastrarUsuario(e) {
     e.preventDefault();
@@ -48,20 +67,10 @@ export default function Cadastro() {
       return;
     }
 
-    if (role === "aluno" && !turma) {
-      toast.error("Informe a turma do aluno");
-
-      return;
-    }
-
     try {
       setLoading(true);
 
-      const response = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        senha,
-      );
+      const response = await createUserWithEmailAndPassword(auth, email, senha);
 
       const uid = response.user.uid;
 
@@ -69,15 +78,15 @@ export default function Cadastro() {
         nome,
         email,
         role,
-        turma: role === "aluno" ? turma : "",
+        turma,
       });
 
       if (role === "aluno") {
         await addDoc(collection(db, "catequizandos"), {
-          uid,
           nome,
           email,
           turma,
+          uid,
         });
       }
 
@@ -89,9 +98,9 @@ export default function Cadastro() {
 
       setSenha("");
 
-      setTurma("");
-
       setRole("aluno");
+
+      setTurma("");
     } catch (error) {
       console.log(error);
 
@@ -111,17 +120,13 @@ export default function Cadastro() {
             Cadastro de Usuários
           </h1>
 
-          <p className="text-gray-400 mt-2">
-            Crie alunos e administradores
-          </p>
+          <p className="text-gray-400 mt-2">Crie alunos e administradores</p>
         </div>
 
         <div className="bg-[#111827] border border-slate-800 rounded-3xl p-8">
           <form onSubmit={cadastrarUsuario} className="space-y-6">
             <div>
-              <label className="text-gray-300 text-sm mb-2 block">
-                Nome
-              </label>
+              <label className="text-gray-300 text-sm mb-2 block">Nome</label>
 
               <div className="relative">
                 <User
@@ -140,9 +145,7 @@ export default function Cadastro() {
             </div>
 
             <div>
-              <label className="text-gray-300 text-sm mb-2 block">
-                E-mail
-              </label>
+              <label className="text-gray-300 text-sm mb-2 block">E-mail</label>
 
               <div className="relative">
                 <Mail
@@ -161,9 +164,7 @@ export default function Cadastro() {
             </div>
 
             <div>
-              <label className="text-gray-300 text-sm mb-2 block">
-                Senha
-              </label>
+              <label className="text-gray-300 text-sm mb-2 block">Senha</label>
 
               <div className="relative">
                 <Lock
@@ -180,29 +181,6 @@ export default function Cadastro() {
                 />
               </div>
             </div>
-
-            {role === "aluno" && (
-              <div>
-                <label className="text-gray-300 text-sm mb-2 block">
-                  Turma
-                </label>
-
-                <div className="relative">
-                  <BookOpen
-                    size={18}
-                    className="absolute left-4 top-4 text-gray-400"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Digite a turma"
-                    value={turma}
-                    onChange={(e) => setTurma(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-            )}
 
             <div>
               <label className="text-gray-300 text-sm mb-2 block">
@@ -259,6 +237,28 @@ export default function Cadastro() {
                 </button>
               </div>
             </div>
+
+            {role === "aluno" && (
+              <div>
+                <label className="text-gray-300 text-sm mb-2 block">
+                  Turma
+                </label>
+
+                <select
+                  value={turma}
+                  onChange={(e) => setTurma(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 px-4 text-white outline-none focus:border-blue-500"
+                >
+                  <option value="">Selecione a turma</option>
+
+                  {turmas.map((item) => (
+                    <option key={item.id} value={item.nome}>
+                      {item.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <button
               type="submit"
