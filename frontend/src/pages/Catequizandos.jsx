@@ -4,27 +4,28 @@ import MainLayout from "../layouts/MainLayout";
 
 import {
   collection,
-  addDoc,
   getDocs,
   deleteDoc,
-  doc,
   updateDoc,
+  doc,
 } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
-import { UserPlus, Trash2, Pencil, Save, X, Loader2 } from "lucide-react";
+import { Trash2, Pencil, Save, X, Search } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Catequizandos() {
-  const [nome, setNome] = useState("");
-
-  const [turma, setTurma] = useState("");
-
   const [catequizandos, setCatequizandos] = useState([]);
 
-  const [loading, setLoading] = useState(false);
+  const [listaOriginal, setListaOriginal] = useState([]);
+
+  const [turmas, setTurmas] = useState([]);
+
+  const [busca, setBusca] = useState("");
+
+  const [filtroTurma, setFiltroTurma] = useState("");
 
   const [editandoId, setEditandoId] = useState(null);
 
@@ -33,8 +34,6 @@ export default function Catequizandos() {
   const [editTurma, setEditTurma] = useState("");
 
   async function carregarCatequizandos() {
-    setLoading(true);
-
     try {
       const querySnapshot = await getDocs(collection(db, "catequizandos"));
 
@@ -48,52 +47,46 @@ export default function Catequizandos() {
       });
 
       setCatequizandos(lista);
-    } catch (error) {
-      console.log(error);
 
+      setListaOriginal(lista);
+    } catch {
       toast.error("Erro ao carregar catequizandos");
     }
-
-    setLoading(false);
   }
 
-  async function adicionarCatequizando() {
-    if (!nome || !turma) {
-      toast.error("Preencha todos os campos");
-
-      return;
-    }
-
+  async function carregarTurmas() {
     try {
-      await addDoc(collection(db, "catequizandos"), {
-        nome,
-        turma,
+      const snapshot = await getDocs(collection(db, "turmas"));
+
+      const lista = [];
+
+      snapshot.forEach((doc) => {
+        lista.push({
+          id: doc.id,
+          ...doc.data(),
+        });
       });
 
-      toast.success("Catequizando adicionado");
-
-      setNome("");
-
-      setTurma("");
-
-      carregarCatequizandos();
-    } catch (error) {
-      console.log(error);
-
-      toast.error("Erro ao adicionar");
+      setTurmas(lista);
+    } catch {
+      toast.error("Erro ao carregar turmas");
     }
   }
 
   async function excluirCatequizando(id) {
+    const confirmar = window.confirm(
+      "Deseja realmente excluir este catequizando?",
+    );
+
+    if (!confirmar) return;
+
     try {
       await deleteDoc(doc(db, "catequizandos", id));
 
       toast.success("Catequizando removido");
 
       carregarCatequizandos();
-    } catch (error) {
-      console.log(error);
-
+    } catch {
       toast.error("Erro ao excluir");
     }
   }
@@ -106,9 +99,17 @@ export default function Catequizandos() {
     setEditTurma(item.turma);
   }
 
+  function cancelarEdicao() {
+    setEditandoId(null);
+
+    setEditNome("");
+
+    setEditTurma("");
+  }
+
   async function salvarEdicao(id) {
     if (!editNome || !editTurma) {
-      toast.error("Preencha os campos");
+      toast.error("Preencha todos os campos");
 
       return;
     }
@@ -121,19 +122,41 @@ export default function Catequizandos() {
 
       toast.success("Catequizando atualizado");
 
-      setEditandoId(null);
+      cancelarEdicao();
 
       carregarCatequizandos();
-    } catch (error) {
-      console.log(error);
-
+    } catch {
       toast.error("Erro ao atualizar");
     }
   }
 
+  function aplicarFiltros() {
+    let lista = [...listaOriginal];
+
+    if (busca.trim()) {
+      lista = lista.filter((item) =>
+        item.nome?.toLowerCase().includes(busca.toLowerCase()),
+      );
+    }
+
+    if (filtroTurma) {
+      lista = lista.filter(
+        (item) => item.turma?.toLowerCase() === filtroTurma.toLowerCase(),
+      );
+    }
+
+    setCatequizandos(lista);
+  }
+
   useEffect(() => {
     carregarCatequizandos();
+
+    carregarTurmas();
   }, []);
+
+  useEffect(() => {
+    aplicarFiltros();
+  }, [busca, filtroTurma]);
 
   return (
     <MainLayout>
@@ -143,129 +166,115 @@ export default function Catequizandos() {
         <div>
           <h1 className="text-3xl font-bold text-white">Catequizandos</h1>
 
-          <p className="text-gray-400 mt-2">Gerencie os alunos da catequese</p>
+          <p className="text-gray-400 mt-2">
+            Gerencie os catequizandos cadastrados
+          </p>
         </div>
 
-        <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6 space-y-4">
-          <input
-            type="text"
-            placeholder="Nome do catequizando"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-4 text-white outline-none"
-          />
+        <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="relative">
+              <Search
+                size={18}
+                className="absolute left-4 top-4 text-gray-400"
+              />
 
-          <input
-            type="text"
-            placeholder="Turma"
-            value={turma}
-            onChange={(e) => setTurma(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-4 text-white outline-none"
-          />
-
-          <button
-            onClick={adicionarCatequizando}
-            className="bg-blue-600 hover:bg-blue-500 transition px-6 py-4 rounded-2xl text-white font-semibold flex items-center gap-2"
-          >
-            <UserPlus size={20} />
-            Adicionar Catequizando
-          </button>
-        </div>
-
-        <div className="bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden">
-          {loading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin text-blue-500" size={40} />
+              <input
+                type="text"
+                placeholder="Buscar por nome"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-2xl py-3 pl-12 pr-4 text-white outline-none"
+              />
             </div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-slate-900">
-                <tr>
-                  <th className="text-left text-gray-400 font-medium p-5">
-                    Nome
-                  </th>
 
-                  <th className="text-left text-gray-400 font-medium p-5">
-                    Turma
-                  </th>
+            <select
+              value={filtroTurma}
+              onChange={(e) => setFiltroTurma(e.target.value)}
+              className="bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white outline-none"
+            >
+              <option value="">Todas as turmas</option>
 
-                  <th className="text-left text-gray-400 font-medium p-5">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
+              {turmas.map((item) => (
+                <option key={item.id} value={item.nome}>
+                  {item.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-              <tbody>
-                {catequizandos.map((item) => (
-                  <tr key={item.id} className="border-t border-slate-800">
-                    <td className="p-5">
-                      {editandoId === item.id ? (
-                        <input
-                          value={editNome}
-                          onChange={(e) => setEditNome(e.target.value)}
-                          className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white outline-none"
-                        />
-                      ) : (
-                        <span className="text-white">{item.nome}</span>
-                      )}
-                    </td>
+        <div className="grid gap-5">
+          {catequizandos.map((item) => (
+            <div
+              key={item.id}
+              className="bg-[#111827] border border-slate-800 rounded-3xl p-6"
+            >
+              {editandoId === item.id ? (
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    value={editNome}
+                    onChange={(e) => setEditNome(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white outline-none"
+                  />
 
-                    <td className="p-5">
-                      {editandoId === item.id ? (
-                        <input
-                          value={editTurma}
-                          onChange={(e) => setEditTurma(e.target.value)}
-                          className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white outline-none"
-                        />
-                      ) : (
-                        <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-                          {item.turma}
-                        </span>
-                      )}
-                    </td>
+                  <input
+                    type="text"
+                    value={editTurma}
+                    onChange={(e) => setEditTurma(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white outline-none"
+                  />
 
-                    <td className="p-5">
-                      <div className="flex items-center gap-3">
-                        {editandoId === item.id ? (
-                          <>
-                            <button
-                              onClick={() => salvarEdicao(item.id)}
-                              className="bg-green-600 hover:bg-green-500 transition p-3 rounded-xl text-white"
-                            >
-                              <Save size={18} />
-                            </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => salvarEdicao(item.id)}
+                      className="bg-green-600 hover:bg-green-500 transition px-5 py-3 rounded-2xl text-white flex items-center gap-2"
+                    >
+                      <Save size={18} />
+                      Salvar
+                    </button>
 
-                            <button
-                              onClick={() => setEditandoId(null)}
-                              className="bg-gray-600 hover:bg-gray-500 transition p-3 rounded-xl text-white"
-                            >
-                              <X size={18} />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => iniciarEdicao(item)}
-                              className="bg-yellow-600 hover:bg-yellow-500 transition p-3 rounded-xl text-white"
-                            >
-                              <Pencil size={18} />
-                            </button>
+                    <button
+                      onClick={cancelarEdicao}
+                      className="bg-gray-600 hover:bg-gray-500 transition px-5 py-3 rounded-2xl text-white flex items-center gap-2"
+                    >
+                      <X size={18} />
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      {item.nome}
+                    </h2>
 
-                            <button
-                              onClick={() => excluirCatequizando(item.id)}
-                              className="bg-red-600 hover:bg-red-500 transition p-3 rounded-xl text-white"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                    <p className="text-gray-400 mt-1">Turma: {item.turma}</p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => iniciarEdicao(item)}
+                      className="bg-yellow-600 hover:bg-yellow-500 transition px-5 py-3 rounded-2xl text-white flex items-center gap-2"
+                    >
+                      <Pencil size={18} />
+                      Editar
+                    </button>
+
+                    <button
+                      onClick={() => excluirCatequizando(item.id)}
+                      className="bg-red-600 hover:bg-red-500 transition px-5 py-3 rounded-2xl text-white flex items-center gap-2"
+                    >
+                      <Trash2 size={18} />
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </MainLayout>
