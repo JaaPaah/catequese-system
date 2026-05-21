@@ -15,8 +15,6 @@ export default function Presencas() {
 
   const [loading, setLoading] = useState(false);
 
-  const [turma, setTurma] = useState("");
-
   async function carregarCatequizandos() {
     setLoading(true);
 
@@ -25,22 +23,22 @@ export default function Presencas() {
 
       const dados = [];
 
-      querySnapshot.forEach((item) => {
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+
         dados.push({
-          id: item.id,
-
-          uid: item.data().uid,
-
-          nome: item.data().nome,
-
-          email: item.data().email,
-
+          id: doc.id,
+          uid: data.uid || "",
+          nome: data.nome || "",
+          turma: data.turma || "",
           presente: false,
         });
       });
 
       setCatequizandos(dados);
-    } catch {
+    } catch (error) {
+      console.log(error);
+
       toast.error("Erro ao carregar catequizandos");
     }
 
@@ -61,33 +59,24 @@ export default function Presencas() {
   }
 
   async function salvarPresencas() {
-    if (!turma.trim()) {
-      toast.error("Digite a turma");
-
-      return;
-    }
-
     try {
-      for (const aluno of catequizandos) {
-        await addDoc(collection(db, "presencas"), {
+      const promises = catequizandos.map((aluno) =>
+        addDoc(collection(db, "presencas"), {
           alunoId: aluno.id,
-
           uid: aluno.uid,
-
           nome: aluno.nome,
-
-          email: aluno.email,
-
-          turma,
-
+          turma: aluno.turma,
           presente: aluno.presente,
-
           data: new Date(),
-        });
-      }
+        }),
+      );
+
+      await Promise.all(promises);
 
       toast.success("Presenças salvas");
-    } catch {
+    } catch (error) {
+      console.log(error);
+
       toast.error("Erro ao salvar");
     }
   }
@@ -109,16 +98,6 @@ export default function Presencas() {
           <p className="text-gray-400 mt-1">Gerencie presenças da turma</p>
         </div>
 
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-          <input
-            type="text"
-            placeholder="Nome da turma"
-            value={turma}
-            onChange={(e) => setTurma(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
-          />
-        </div>
-
         <div className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-10">
@@ -130,6 +109,10 @@ export default function Presencas() {
                 <tr>
                   <th className="text-left text-gray-400 font-medium p-5">
                     Catequizando
+                  </th>
+
+                  <th className="text-left text-gray-400 font-medium p-5">
+                    Turma
                   </th>
 
                   <th className="text-left text-gray-400 font-medium p-5">
@@ -149,6 +132,8 @@ export default function Presencas() {
                     className="border-t border-slate-800 hover:bg-slate-900 transition"
                   >
                     <td className="p-5 text-white">{item.nome}</td>
+
+                    <td className="p-5 text-gray-300">{item.turma}</td>
 
                     <td className="p-5">
                       {item.presente ? (

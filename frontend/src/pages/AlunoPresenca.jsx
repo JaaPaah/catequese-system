@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import MainLayout from "../layouts/MainLayoutAluno";
 
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
@@ -15,41 +15,33 @@ export default function AlunoPresenca() {
 
   const [loading, setLoading] = useState(true);
 
-  const user = JSON.parse(localStorage.getItem("user"));
-
   async function carregarDados() {
     try {
-      /*
-        BUSCA SOMENTE PRESENÇAS DO ALUNO LOGADO
-      */
+      const user = JSON.parse(localStorage.getItem("user"));
 
-      const presencasRef = collection(db, "presencas");
-
-      const q = query(presencasRef, where("alunoId", "==", user.uid));
-
-      const presencasSnapshot = await getDocs(q);
-
-      const listaPresencas = [];
-
-      presencasSnapshot.forEach((item) => {
-        listaPresencas.push({
-          id: item.id,
-          ...item.data(),
-        });
-      });
-
-      /*
-        AVISOS
-      */
+      const presencasSnapshot = await getDocs(collection(db, "presencas"));
 
       const avisosSnapshot = await getDocs(collection(db, "avisos"));
 
+      const listaPresencas = [];
+
+      presencasSnapshot.forEach((doc) => {
+        const data = doc.data();
+
+        if (data.uid === user.uid) {
+          listaPresencas.push({
+            id: doc.id,
+            ...data,
+          });
+        }
+      });
+
       const listaAvisos = [];
 
-      avisosSnapshot.forEach((item) => {
+      avisosSnapshot.forEach((doc) => {
         listaAvisos.push({
-          id: item.id,
-          ...item.data(),
+          id: doc.id,
+          ...doc.data(),
         });
       });
 
@@ -122,12 +114,12 @@ export default function AlunoPresenca() {
 
             <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
               <h2 className="text-white text-xl font-semibold mb-6">
-                Meu Histórico
+                Histórico de Presenças
               </h2>
 
               <div className="space-y-4">
                 {presencas.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400">
+                  <div className="text-gray-400">
                     Nenhuma presença encontrada
                   </div>
                 ) : (

@@ -10,13 +10,19 @@ import {
   GraduationCap,
   Shield,
   Loader2,
+  BookOpen,
 } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
-import { doc, setDoc, addDoc, collection } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  addDoc,
+  collection,
+} from "firebase/firestore";
 
 import { auth, db } from "../services/firebase";
 
@@ -29,6 +35,8 @@ export default function Cadastro() {
 
   const [role, setRole] = useState("aluno");
 
+  const [turma, setTurma] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   async function cadastrarUsuario(e) {
@@ -40,18 +48,28 @@ export default function Cadastro() {
       return;
     }
 
+    if (role === "aluno" && !turma) {
+      toast.error("Informe a turma do aluno");
+
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const response = await createUserWithEmailAndPassword(auth, email, senha);
+      const response = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        senha,
+      );
 
       const uid = response.user.uid;
 
       await setDoc(doc(db, "usuarios", uid), {
-        uid,
         nome,
         email,
         role,
+        turma: role === "aluno" ? turma : "",
       });
 
       if (role === "aluno") {
@@ -59,7 +77,7 @@ export default function Cadastro() {
           uid,
           nome,
           email,
-          criadoEm: new Date(),
+          turma,
         });
       }
 
@@ -70,6 +88,8 @@ export default function Cadastro() {
       setEmail("");
 
       setSenha("");
+
+      setTurma("");
 
       setRole("aluno");
     } catch (error) {
@@ -91,13 +111,17 @@ export default function Cadastro() {
             Cadastro de Usuários
           </h1>
 
-          <p className="text-gray-400 mt-2">Crie alunos e administradores</p>
+          <p className="text-gray-400 mt-2">
+            Crie alunos e administradores
+          </p>
         </div>
 
         <div className="bg-[#111827] border border-slate-800 rounded-3xl p-8">
           <form onSubmit={cadastrarUsuario} className="space-y-6">
             <div>
-              <label className="text-gray-300 text-sm mb-2 block">Nome</label>
+              <label className="text-gray-300 text-sm mb-2 block">
+                Nome
+              </label>
 
               <div className="relative">
                 <User
@@ -116,7 +140,9 @@ export default function Cadastro() {
             </div>
 
             <div>
-              <label className="text-gray-300 text-sm mb-2 block">E-mail</label>
+              <label className="text-gray-300 text-sm mb-2 block">
+                E-mail
+              </label>
 
               <div className="relative">
                 <Mail
@@ -135,7 +161,9 @@ export default function Cadastro() {
             </div>
 
             <div>
-              <label className="text-gray-300 text-sm mb-2 block">Senha</label>
+              <label className="text-gray-300 text-sm mb-2 block">
+                Senha
+              </label>
 
               <div className="relative">
                 <Lock
@@ -152,6 +180,29 @@ export default function Cadastro() {
                 />
               </div>
             </div>
+
+            {role === "aluno" && (
+              <div>
+                <label className="text-gray-300 text-sm mb-2 block">
+                  Turma
+                </label>
+
+                <div className="relative">
+                  <BookOpen
+                    size={18}
+                    className="absolute left-4 top-4 text-gray-400"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Digite a turma"
+                    value={turma}
+                    onChange={(e) => setTurma(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="text-gray-300 text-sm mb-2 block">
