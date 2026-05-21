@@ -13,22 +13,24 @@ import {
 
 import { db } from "../services/firebase";
 
-import { Trash2, UserPlus, Pencil, Search, Loader2, Save } from "lucide-react";
+import { UserPlus, Trash2, Pencil, Save, X, Loader2 } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Catequizandos() {
   const [nome, setNome] = useState("");
 
-  const [busca, setBusca] = useState("");
+  const [turma, setTurma] = useState("");
 
-  const [lista, setLista] = useState([]);
+  const [catequizandos, setCatequizandos] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
   const [editandoId, setEditandoId] = useState(null);
 
-  const [novoNome, setNovoNome] = useState("");
+  const [editNome, setEditNome] = useState("");
+
+  const [editTurma, setEditTurma] = useState("");
 
   async function carregarCatequizandos() {
     setLoading(true);
@@ -36,42 +38,49 @@ export default function Catequizandos() {
     try {
       const querySnapshot = await getDocs(collection(db, "catequizandos"));
 
-      const dados = [];
+      const lista = [];
 
-      querySnapshot.forEach((item) => {
-        dados.push({
-          id: item.id,
-          ...item.data(),
+      querySnapshot.forEach((doc) => {
+        lista.push({
+          id: doc.id,
+          ...doc.data(),
         });
       });
 
-      setLista(dados);
+      setCatequizandos(lista);
     } catch (error) {
-      toast.error("Erro ao carregar");
+      console.log(error);
+
+      toast.error("Erro ao carregar catequizandos");
     }
 
     setLoading(false);
   }
 
-  async function salvarCatequizando() {
-    if (!nome.trim()) {
-      toast.error("Digite um nome");
+  async function adicionarCatequizando() {
+    if (!nome || !turma) {
+      toast.error("Preencha todos os campos");
+
       return;
     }
 
     try {
       await addDoc(collection(db, "catequizandos"), {
         nome,
-        criadoEm: new Date(),
+        turma,
       });
 
-      toast.success("Catequizando salvo");
+      toast.success("Catequizando adicionado");
 
       setNome("");
 
+      setTurma("");
+
       carregarCatequizandos();
     } catch (error) {
-      toast.error("Erro ao salvar");
+      console.log(error);
+
+      toast.error("Erro ao adicionar");
     }
   }
 
@@ -79,44 +88,52 @@ export default function Catequizandos() {
     try {
       await deleteDoc(doc(db, "catequizandos", id));
 
-      toast.success("Excluído");
+      toast.success("Catequizando removido");
 
       carregarCatequizandos();
     } catch (error) {
+      console.log(error);
+
       toast.error("Erro ao excluir");
     }
   }
 
+  function iniciarEdicao(item) {
+    setEditandoId(item.id);
+
+    setEditNome(item.nome);
+
+    setEditTurma(item.turma);
+  }
+
   async function salvarEdicao(id) {
-    if (!novoNome.trim()) {
-      toast.error("Digite um nome");
+    if (!editNome || !editTurma) {
+      toast.error("Preencha os campos");
+
       return;
     }
 
     try {
       await updateDoc(doc(db, "catequizandos", id), {
-        nome: novoNome,
+        nome: editNome,
+        turma: editTurma,
       });
 
-      toast.success("Atualizado");
+      toast.success("Catequizando atualizado");
 
       setEditandoId(null);
 
-      setNovoNome("");
-
       carregarCatequizandos();
     } catch (error) {
-      toast.error("Erro ao editar");
+      console.log(error);
+
+      toast.error("Erro ao atualizar");
     }
   }
 
   useEffect(() => {
     carregarCatequizandos();
   }, []);
-
-  const listaFiltrada = lista.filter((item) =>
-    item.nome?.toLowerCase().includes(busca.toLowerCase()),
-  );
 
   return (
     <MainLayout>
@@ -126,107 +143,128 @@ export default function Catequizandos() {
         <div>
           <h1 className="text-3xl font-bold text-white">Catequizandos</h1>
 
-          <p className="text-gray-400 mt-1">Gerenciamento completo</p>
+          <p className="text-gray-400 mt-2">Gerencie os alunos da catequese</p>
         </div>
 
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 space-y-4">
-          <div className="flex gap-4">
-            <input
-              type="text"
-              placeholder="Nome do catequizando"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none"
-            />
+        <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6 space-y-4">
+          <input
+            type="text"
+            placeholder="Nome do catequizando"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-4 text-white outline-none"
+          />
 
-            <button
-              onClick={salvarCatequizando}
-              className="bg-blue-600 hover:bg-blue-500 transition px-6 rounded-xl text-white font-semibold flex items-center gap-2"
-            >
-              <UserPlus size={18} />
-              Salvar
-            </button>
-          </div>
+          <input
+            type="text"
+            placeholder="Turma"
+            value={turma}
+            onChange={(e) => setTurma(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-4 text-white outline-none"
+          />
 
-          <div className="relative">
-            <Search
-              className="absolute left-4 top-3.5 text-gray-500"
-              size={18}
-            />
-
-            <input
-              type="text"
-              placeholder="Buscar catequizando..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-white outline-none"
-            />
-          </div>
+          <button
+            onClick={adicionarCatequizando}
+            className="bg-blue-600 hover:bg-blue-500 transition px-6 py-4 rounded-2xl text-white font-semibold flex items-center gap-2"
+          >
+            <UserPlus size={20} />
+            Adicionar Catequizando
+          </button>
         </div>
 
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-white text-xl font-semibold">
-              Lista de Catequizandos
-            </h2>
-
-            <span className="text-gray-400 text-sm">
-              {listaFiltrada.length} registros
-            </span>
-          </div>
-
+        <div className="bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="animate-spin text-blue-500" size={40} />
             </div>
           ) : (
-            <div className="space-y-4">
-              {listaFiltrada.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4"
-                >
-                  {editandoId === item.id ? (
-                    <input
-                      type="text"
-                      value={novoNome}
-                      onChange={(e) => setNovoNome(e.target.value)}
-                      className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none"
-                    />
-                  ) : (
-                    <span className="text-white">{item.nome}</span>
-                  )}
+            <table className="w-full">
+              <thead className="bg-slate-900">
+                <tr>
+                  <th className="text-left text-gray-400 font-medium p-5">
+                    Nome
+                  </th>
 
-                  <div className="flex items-center gap-2">
-                    {editandoId === item.id ? (
-                      <button
-                        onClick={() => salvarEdicao(item.id)}
-                        className="bg-green-600 hover:bg-green-500 transition p-2 rounded-lg text-white"
-                      >
-                        <Save size={18} />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setEditandoId(item.id);
-                          setNovoNome(item.nome);
-                        }}
-                        className="bg-yellow-600 hover:bg-yellow-500 transition p-2 rounded-lg text-white"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                    )}
+                  <th className="text-left text-gray-400 font-medium p-5">
+                    Turma
+                  </th>
 
-                    <button
-                      onClick={() => excluirCatequizando(item.id)}
-                      className="bg-red-600 hover:bg-red-500 transition p-2 rounded-lg text-white"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  <th className="text-left text-gray-400 font-medium p-5">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {catequizandos.map((item) => (
+                  <tr key={item.id} className="border-t border-slate-800">
+                    <td className="p-5">
+                      {editandoId === item.id ? (
+                        <input
+                          value={editNome}
+                          onChange={(e) => setEditNome(e.target.value)}
+                          className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white outline-none"
+                        />
+                      ) : (
+                        <span className="text-white">{item.nome}</span>
+                      )}
+                    </td>
+
+                    <td className="p-5">
+                      {editandoId === item.id ? (
+                        <input
+                          value={editTurma}
+                          onChange={(e) => setEditTurma(e.target.value)}
+                          className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white outline-none"
+                        />
+                      ) : (
+                        <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+                          {item.turma}
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="p-5">
+                      <div className="flex items-center gap-3">
+                        {editandoId === item.id ? (
+                          <>
+                            <button
+                              onClick={() => salvarEdicao(item.id)}
+                              className="bg-green-600 hover:bg-green-500 transition p-3 rounded-xl text-white"
+                            >
+                              <Save size={18} />
+                            </button>
+
+                            <button
+                              onClick={() => setEditandoId(null)}
+                              className="bg-gray-600 hover:bg-gray-500 transition p-3 rounded-xl text-white"
+                            >
+                              <X size={18} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => iniciarEdicao(item)}
+                              className="bg-yellow-600 hover:bg-yellow-500 transition p-3 rounded-xl text-white"
+                            >
+                              <Pencil size={18} />
+                            </button>
+
+                            <button
+                              onClick={() => excluirCatequizando(item.id)}
+                              className="bg-red-600 hover:bg-red-500 transition p-3 rounded-xl text-white"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
