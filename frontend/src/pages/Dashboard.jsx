@@ -5,13 +5,10 @@ import MainLayout from "../layouts/MainLayout";
 import {
   Users,
   BookOpen,
+  ClipboardCheck,
   Megaphone,
-  TrendingUp,
   Loader2,
-  Shield,
 } from "lucide-react";
-
-import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from "recharts";
 
 import { collection, getDocs } from "firebase/firestore";
 
@@ -20,27 +17,29 @@ import { db } from "../services/firebase";
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
-  const [totalCatequizandos, setTotalCatequizandos] = useState(0);
-
-  const [totalTurmas, setTotalTurmas] = useState(0);
-
-  const [totalAvisos, setTotalAvisos] = useState(0);
-
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [dados, setDados] = useState({
+    catequizandos: 0,
+    turmas: 0,
+    presencas: 0,
+    avisos: 0,
+  });
 
   async function carregarDados() {
     try {
-      const catequizandos = await getDocs(collection(db, "catequizandos"));
+      const catequizandosSnap = await getDocs(collection(db, "catequizandos"));
 
-      const turmas = await getDocs(collection(db, "turmas"));
+      const turmasSnap = await getDocs(collection(db, "turmas"));
 
-      const avisos = await getDocs(collection(db, "avisos"));
+      const presencasSnap = await getDocs(collection(db, "presencas"));
 
-      setTotalCatequizandos(catequizandos.size);
+      const avisosSnap = await getDocs(collection(db, "avisos"));
 
-      setTotalTurmas(turmas.size);
-
-      setTotalAvisos(avisos.size);
+      setDados({
+        catequizandos: catequizandosSnap.size,
+        turmas: turmasSnap.size,
+        presencas: presencasSnap.size,
+        avisos: avisosSnap.size,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -52,57 +51,45 @@ export default function Dashboard() {
     carregarDados();
   }, []);
 
-  const dadosGrafico = [
+  const cards = [
     {
-      nome: "Jan",
-      catequizandos: 4,
+      titulo: "Catequizandos",
+      valor: dados.catequizandos,
+      icon: Users,
+      cor: "bg-blue-600",
     },
 
     {
-      nome: "Fev",
-      catequizandos: 7,
+      titulo: "Turmas",
+      valor: dados.turmas,
+      icon: BookOpen,
+      cor: "bg-green-600",
     },
 
     {
-      nome: "Mar",
-      catequizandos: 10,
+      titulo: "Presenças",
+      valor: dados.presencas,
+      icon: ClipboardCheck,
+      cor: "bg-purple-600",
     },
 
     {
-      nome: "Abr",
-      catequizandos: 8,
-    },
-
-    {
-      nome: "Mai",
-      catequizandos: 12,
-    },
-
-    {
-      nome: "Jun",
-      catequizandos: 15,
+      titulo: "Avisos",
+      valor: dados.avisos,
+      icon: Megaphone,
+      cor: "bg-orange-600",
     },
   ];
 
   return (
     <MainLayout>
       <div className="space-y-8">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8">
-          <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center">
-              <Shield className="text-white" size={40} />
-            </div>
+        <div>
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
 
-            <div>
-              <h1 className="text-4xl font-bold text-white">
-                Bem-vindo, {user?.nome || "Administrador"}
-              </h1>
-
-              <p className="text-blue-100 mt-2 text-lg">
-                Gerencie sua catequese de forma moderna e organizada
-              </p>
-            </div>
-          </div>
+          <p className="text-gray-400 mt-2">
+            Visão geral do sistema de catequese
+          </p>
         </div>
 
         {loading ? (
@@ -110,93 +97,34 @@ export default function Dashboard() {
             <Loader2 className="animate-spin text-blue-500" size={50} />
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Catequizandos</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {cards.map((card) => {
+              const Icon = card.icon;
 
-                    <h2 className="text-4xl font-bold text-white mt-3">
-                      {totalCatequizandos}
-                    </h2>
-                  </div>
+              return (
+                <div
+                  key={card.titulo}
+                  className="bg-[#111827] border border-slate-800 rounded-3xl p-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">{card.titulo}</p>
 
-                  <div className="bg-blue-600/20 p-4 rounded-2xl">
-                    <Users size={30} className="text-blue-400" />
-                  </div>
-                </div>
-              </div>
+                      <h2 className="text-4xl font-bold text-white mt-3">
+                        {card.valor}
+                      </h2>
+                    </div>
 
-              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Turmas</p>
-
-                    <h2 className="text-4xl font-bold text-white mt-3">
-                      {totalTurmas}
-                    </h2>
-                  </div>
-
-                  <div className="bg-purple-600/20 p-4 rounded-2xl">
-                    <BookOpen size={30} className="text-purple-400" />
+                    <div
+                      className={`${card.cor} w-16 h-16 rounded-2xl flex items-center justify-center`}
+                    >
+                      <Icon className="text-white" size={30} />
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Avisos</p>
-
-                    <h2 className="text-4xl font-bold text-white mt-3">
-                      {totalAvisos}
-                    </h2>
-                  </div>
-
-                  <div className="bg-green-600/20 p-4 rounded-2xl">
-                    <Megaphone size={30} className="text-green-400" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Crescimento</p>
-
-                    <h2 className="text-4xl font-bold text-white mt-3">+24%</h2>
-                  </div>
-
-                  <div className="bg-orange-600/20 p-4 rounded-2xl">
-                    <TrendingUp size={30} className="text-orange-400" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#111827] border border-slate-800 rounded-3xl p-6">
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white">
-                  Crescimento de Catequizandos
-                </h2>
-
-                <p className="text-gray-400 mt-2">Evolução dos últimos meses</p>
-              </div>
-
-              <div className="w-full h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dadosGrafico}>
-                    <XAxis dataKey="nome" stroke="#94a3b8" />
-
-                    <Tooltip />
-
-                    <Bar dataKey="catequizandos" radius={[12, 12, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </>
+              );
+            })}
+          </div>
         )}
       </div>
     </MainLayout>
