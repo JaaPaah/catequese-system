@@ -12,7 +12,7 @@ import {
 
 import { db } from "../services/firebase";
 
-import { BookOpen, Trash2, Loader2 } from "lucide-react";
+import { BookOpen, Trash2, Loader2, Users } from "lucide-react";
 
 import toast, { Toaster } from "react-hot-toast";
 
@@ -27,14 +27,29 @@ export default function Turmas() {
     setLoading(true);
 
     try {
-      const querySnapshot = await getDocs(collection(db, "turmas"));
+      const turmasSnap = await getDocs(collection(db, "turmas"));
+
+      const catequizandosSnap = await getDocs(collection(db, "catequizandos"));
+
+      const contador = {};
+
+      catequizandosSnap.forEach((docItem) => {
+        const aluno = docItem.data();
+
+        contador[aluno.turma] = (contador[aluno.turma] || 0) + 1;
+      });
 
       const dados = [];
 
-      querySnapshot.forEach((item) => {
+      turmasSnap.forEach((item) => {
+        const turma = item.data();
+
         dados.push({
           id: item.id,
-          ...item.data(),
+
+          ...turma,
+
+          quantidade: contador[turma.nome] || 0,
         });
       });
 
@@ -56,6 +71,7 @@ export default function Turmas() {
     try {
       await addDoc(collection(db, "turmas"), {
         nome,
+
         criadoEm: new Date(),
       });
 
@@ -69,9 +85,19 @@ export default function Turmas() {
     }
   }
 
-  async function excluirTurma(id) {
+  async function excluirTurma(turma) {
+    if (turma.quantidade > 0) {
+      toast.error("Remova os alunos da turma antes de excluir");
+
+      return;
+    }
+
+    const confirmar = window.confirm(`Excluir turma ${turma.nome}?`);
+
+    if (!confirmar) return;
+
     try {
-      await deleteDoc(doc(db, "turmas", id));
+      await deleteDoc(doc(db, "turmas", turma.id));
 
       toast.success("Turma excluída");
 
@@ -130,19 +156,28 @@ export default function Turmas() {
               {turmas.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between"
+                  className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-4">
                     <div className="bg-blue-500/20 p-3 rounded-xl">
                       <BookOpen className="text-blue-400" size={22} />
                     </div>
 
-                    <span className="text-white font-medium">{item.nome}</span>
+                    <div>
+                      <h2 className="text-white font-bold text-lg">
+                        {item.nome}
+                      </h2>
+
+                      <div className="flex items-center gap-2 mt-2 text-gray-400 text-sm">
+                        <Users size={16} />
+                        {item.quantidade} alunos
+                      </div>
+                    </div>
                   </div>
 
                   <button
-                    onClick={() => excluirTurma(item.id)}
-                    className="bg-red-600 hover:bg-red-500 transition p-2 rounded-lg text-white"
+                    onClick={() => excluirTurma(item)}
+                    className="bg-red-600 hover:bg-red-500 transition p-3 rounded-lg text-white"
                   >
                     <Trash2 size={18} />
                   </button>
