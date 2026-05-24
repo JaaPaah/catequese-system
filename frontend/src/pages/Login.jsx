@@ -66,6 +66,7 @@ export default function Login() {
         JSON.stringify({
           uid,
           nome: dadosUsuario.nome,
+          email: dadosUsuario.email,
           role: dadosUsuario.role,
           turma: dadosUsuario.turma || "",
         }),

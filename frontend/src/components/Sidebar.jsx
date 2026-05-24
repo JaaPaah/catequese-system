@@ -6,6 +6,7 @@ import {
   Megaphone,
   LogOut,
   Shield,
+  UserPlus,
 } from "lucide-react";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -34,6 +35,12 @@ export default function Sidebar() {
       nome: "Catequizandos",
       icon: Users,
       path: "/catequizandos",
+    },
+
+    {
+      nome: "Cadastro",
+      icon: UserPlus,
+      path: "/cadastro",
     },
 
     {
@@ -122,6 +129,7 @@ export default function Sidebar() {
                   key={item.nome}
                   to={item.path}
                   className={`
+
                     flex
                     items-center
                     gap-4

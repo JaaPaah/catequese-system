@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react";
-
 import MainLayout from "../layouts/MainLayout";
-
 import { collection, getDocs } from "firebase/firestore";
-
 import { db } from "../services/firebase";
-
 import { Megaphone } from "lucide-react";
-
 import toast, { Toaster } from "react-hot-toast";
 
 export default function AvisosAluno() {
@@ -17,11 +12,7 @@ export default function AvisosAluno() {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
 
-      if (!user?.turma) {
-        toast.error("Aluno sem turma cadastrada");
-
-        return;
-      }
+      const turmaAluno = user?.turma?.trim().toLowerCase();
 
       const snapshot = await getDocs(collection(db, "avisos"));
 
@@ -33,7 +24,13 @@ export default function AvisosAluno() {
           ...doc.data(),
         };
 
-        if (aviso.turma === "GERAL" || aviso.turma === user.turma) {
+        const turmaAviso = aviso.turma?.trim().toLowerCase();
+
+        const avisoGeral = turmaAviso === "geral";
+
+        const avisoDaTurma = turmaAviso === turmaAluno;
+
+        if (avisoGeral || avisoDaTurma) {
           lista.push(aviso);
         }
       });

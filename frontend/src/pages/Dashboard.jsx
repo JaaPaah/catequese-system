@@ -8,8 +8,8 @@ import {
   ClipboardCheck,
   Megaphone,
   Loader2,
-  TrendingUp,
-  XCircle,
+  Trophy,
+  AlertTriangle,
 } from "lucide-react";
 
 import { collection, getDocs } from "firebase/firestore";
@@ -23,10 +23,14 @@ export default function Dashboard() {
     catequizandos: 0,
     turmas: 0,
     presencas: 0,
-    faltas: 0,
     avisos: 0,
-    percentual: 0,
   });
+
+  const [melhorAluno, setMelhorAluno] = useState("-");
+
+  const [maisFaltas, setMaisFaltas] = useState("-");
+
+  const [ultimosAvisos, setUltimosAvisos] = useState([]);
 
   async function carregarDados() {
     try {
@@ -38,35 +42,77 @@ export default function Dashboard() {
 
       const avisosSnap = await getDocs(collection(db, "avisos"));
 
-      let totalPresencas = 0;
+      setDados({
+        catequizandos: catequizandosSnap.size,
 
-      let totalFaltas = 0;
+        turmas: turmasSnap.size,
+
+        presencas: presencasSnap.size,
+
+        avisos: avisosSnap.size,
+      });
+
+      const mapa = {};
 
       presencasSnap.forEach((doc) => {
-        const data = doc.data();
+        const item = doc.data();
 
-        if (data.presente) {
-          totalPresencas++;
+        if (!mapa[item.nome]) {
+          mapa[item.nome] = {
+            presentes: 0,
+            faltas: 0,
+          };
+        }
+
+        if (item.presente) {
+          mapa[item.nome].presentes++;
         } else {
-          totalFaltas++;
+          mapa[item.nome].faltas++;
         }
       });
 
-      const totalRegistros = totalPresencas + totalFaltas;
+      let topAluno = "-";
 
-      const percentual =
-        totalRegistros > 0
-          ? Math.round((totalPresencas / totalRegistros) * 100)
-          : 0;
+      let topPresencas = -1;
 
-      setDados({
-        catequizandos: catequizandosSnap.size,
-        turmas: turmasSnap.size,
-        presencas: totalPresencas,
-        faltas: totalFaltas,
-        avisos: avisosSnap.size,
-        percentual,
+      let topFaltasAluno = "-";
+
+      let topFaltas = -1;
+
+      Object.entries(mapa).forEach(([nome, stats]) => {
+        if (stats.presentes > topPresencas) {
+          topPresencas = stats.presentes;
+
+          topAluno = nome;
+        }
+
+        if (stats.faltas > topFaltas) {
+          topFaltas = stats.faltas;
+
+          topFaltasAluno = nome;
+        }
       });
+
+      setMelhorAluno(topAluno);
+
+      setMaisFaltas(topFaltasAluno);
+
+      const listaAvisos = [];
+
+      avisosSnap.forEach((doc) => {
+        listaAvisos.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      listaAvisos.sort((a, b) => {
+        if (!a.data || !b.data) return 0;
+
+        return b.data.seconds - a.data.seconds;
+      });
+
+      setUltimosAvisos(listaAvisos.slice(0, 3));
     } catch (error) {
       console.log(error);
     }
@@ -101,24 +147,10 @@ export default function Dashboard() {
     },
 
     {
-      titulo: "Faltas",
-      valor: dados.faltas,
-      icon: XCircle,
-      cor: "bg-red-600",
-    },
-
-    {
       titulo: "Avisos",
       valor: dados.avisos,
       icon: Megaphone,
       cor: "bg-orange-600",
-    },
-
-    {
-      titulo: "Taxa de Presença",
-      valor: `${dados.percentual}%`,
-      icon: TrendingUp,
-      cor: "bg-cyan-600",
     },
   ];
 
@@ -128,9 +160,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
 
-          <p className="text-gray-400 mt-2">
-            Visão geral do sistema de catequese
-          </p>
+          <p className="text-gray-400 mt-2">Visão geral do sistema</p>
         </div>
 
         {loading ? (
@@ -139,7 +169,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {cards.map((card) => {
                 const Icon = card.icon;
 
@@ -168,24 +198,52 @@ export default function Dashboard() {
               })}
             </div>
 
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-[#111827] border border-slate-800 rounded-3xl p-8">
+                <div className="flex items-center gap-4">
+                  <Trophy className="text-yellow-400" />
+
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      Melhor Frequência
+                    </h2>
+
+                    <p className="text-gray-400 mt-2">{melhorAluno}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[#111827] border border-slate-800 rounded-3xl p-8">
+                <div className="flex items-center gap-4">
+                  <AlertTriangle className="text-red-400" />
+
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      Mais Faltas
+                    </h2>
+
+                    <p className="text-gray-400 mt-2">{maisFaltas}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-[#111827] border border-slate-800 rounded-3xl p-8">
-              <h2 className="text-2xl font-bold text-white mb-3">
-                Desempenho Geral
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Últimos Avisos
               </h2>
 
-              <p className="text-gray-400 mb-6">
-                Taxa geral de presença dos catequizandos
-              </p>
+              <div className="space-y-4">
+                {ultimosAvisos.map((aviso) => (
+                  <div
+                    key={aviso.id}
+                    className="border border-slate-700 rounded-2xl p-5"
+                  >
+                    <h3 className="text-white font-bold">{aviso.titulo}</h3>
 
-              <div className="w-full bg-slate-800 rounded-full h-8 overflow-hidden">
-                <div
-                  className="bg-cyan-500 h-8 flex items-center justify-center text-white font-bold transition-all"
-                  style={{
-                    width: `${dados.percentual}%`,
-                  }}
-                >
-                  {dados.percentual}%
-                </div>
+                    <p className="text-gray-400 mt-2">{aviso.descricao}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </>
