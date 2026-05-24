@@ -14,6 +14,8 @@ import AlunoPresenca from "./pages/AlunoPresenca";
 
 import Presencas from "./pages/Presencas";
 
+import HistoricoPresencas from "./pages/HistoricoPresencas";
+
 import Avisos from "./pages/Avisos";
 
 import AvisosAluno from "./pages/AvisosAluno";
@@ -62,6 +64,15 @@ export default function App() {
           element={
             <ProtectedRoute role="adm">
               <Presencas />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/historico-presencas"
+          element={
+            <ProtectedRoute role="adm">
+              <HistoricoPresencas />
             </ProtectedRoute>
           }
         />

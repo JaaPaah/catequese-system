@@ -56,6 +56,12 @@ export default function Sidebar() {
     },
 
     {
+      nome: "Histórico",
+      icon: ClipboardCheck,
+      path: "/historico-presencas",
+    },
+
+    {
       nome: "Avisos",
       icon: Megaphone,
       path: "/avisos",
