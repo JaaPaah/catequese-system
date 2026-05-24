@@ -32,6 +32,10 @@ export default function Dashboard() {
 
   const [ultimosAvisos, setUltimosAvisos] = useState([]);
 
+  const [presentesHoje, setPresentesHoje] = useState(0);
+
+  const [ausentesHoje, setAusentesHoje] = useState(0);
+
   async function carregarDados() {
     try {
       const catequizandosSnap = await getDocs(collection(db, "catequizandos"));
@@ -54,8 +58,24 @@ export default function Dashboard() {
 
       const mapa = {};
 
-      presencasSnap.forEach((doc) => {
-        const item = doc.data();
+      let presentesDia = 0;
+
+      let ausentesDia = 0;
+
+      const hoje = new Date().toLocaleDateString("pt-BR");
+
+      presencasSnap.forEach((docItem) => {
+        const item = docItem.data();
+
+        const dataRegistro = item.data?.toDate()?.toLocaleDateString("pt-BR");
+
+        if (dataRegistro === hoje) {
+          if (item.presente) {
+            presentesDia++;
+          } else {
+            ausentesDia++;
+          }
+        }
 
         if (!mapa[item.nome]) {
           mapa[item.nome] = {
@@ -97,12 +117,16 @@ export default function Dashboard() {
 
       setMaisFaltas(topFaltasAluno);
 
+      setPresentesHoje(presentesDia);
+
+      setAusentesHoje(ausentesDia);
+
       const listaAvisos = [];
 
-      avisosSnap.forEach((doc) => {
+      avisosSnap.forEach((docItem) => {
         listaAvisos.push({
-          id: doc.id,
-          ...doc.data(),
+          id: docItem.id,
+          ...docItem.data(),
         });
       });
 
@@ -127,29 +151,61 @@ export default function Dashboard() {
   const cards = [
     {
       titulo: "Catequizandos",
+
       valor: dados.catequizandos,
+
       icon: Users,
+
       cor: "bg-blue-600",
     },
 
     {
       titulo: "Turmas",
+
       valor: dados.turmas,
+
       icon: BookOpen,
+
       cor: "bg-green-600",
     },
 
     {
-      titulo: "Presenças",
-      valor: dados.presencas,
+      titulo: "Presentes Hoje",
+
+      valor: presentesHoje,
+
       icon: ClipboardCheck,
+
+      cor: "bg-emerald-600",
+    },
+
+    {
+      titulo: "Ausentes Hoje",
+
+      valor: ausentesHoje,
+
+      icon: AlertTriangle,
+
+      cor: "bg-red-600",
+    },
+
+    {
+      titulo: "Presenças",
+
+      valor: dados.presencas,
+
+      icon: ClipboardCheck,
+
       cor: "bg-purple-600",
     },
 
     {
       titulo: "Avisos",
+
       valor: dados.avisos,
+
       icon: Megaphone,
+
       cor: "bg-orange-600",
     },
   ];
@@ -169,7 +225,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {cards.map((card) => {
                 const Icon = card.icon;
 
