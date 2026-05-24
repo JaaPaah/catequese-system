@@ -16,7 +16,11 @@ import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
 
+import { useNavigate } from "react-router-dom";
+
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
 
   const [dados, setDados] = useState({
@@ -151,62 +155,50 @@ export default function Dashboard() {
   const cards = [
     {
       titulo: "Catequizandos",
-
       valor: dados.catequizandos,
-
       icon: Users,
-
       cor: "bg-blue-600",
+      rota: "/catequizandos",
     },
 
     {
       titulo: "Turmas",
-
       valor: dados.turmas,
-
       icon: BookOpen,
-
       cor: "bg-green-600",
+      rota: "/turmas",
     },
 
     {
       titulo: "Presentes Hoje",
-
       valor: presentesHoje,
-
       icon: ClipboardCheck,
-
       cor: "bg-emerald-600",
+      rota: "/presencas",
     },
 
     {
       titulo: "Ausentes Hoje",
-
       valor: ausentesHoje,
-
       icon: AlertTriangle,
-
       cor: "bg-red-600",
+      rota: "/presencas",
     },
 
     {
       titulo: "Presenças",
-
       valor: dados.presencas,
-
       icon: ClipboardCheck,
-
       cor: "bg-purple-600",
+      rota: "/presencas",
     },
 
     {
       titulo: "Avisos",
-
       valor: dados.avisos,
-
       icon: Megaphone,
-
       cor: "bg-orange-600",
+      rota: "/avisos",
     },
   ];
 
@@ -232,7 +224,8 @@ export default function Dashboard() {
                 return (
                   <div
                     key={card.titulo}
-                    className="bg-[#111827] border border-slate-800 rounded-3xl p-6"
+                    onClick={() => navigate(card.rota)}
+                    className="bg-[#111827] border border-slate-800 rounded-3xl p-6 cursor-pointer hover:border-blue-500 hover:scale-[1.02] transition duration-200"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -281,25 +274,6 @@ export default function Dashboard() {
                     <p className="text-gray-400 mt-2">{maisFaltas}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-[#111827] border border-slate-800 rounded-3xl p-8">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                Últimos Avisos
-              </h2>
-
-              <div className="space-y-4">
-                {ultimosAvisos.map((aviso) => (
-                  <div
-                    key={aviso.id}
-                    className="border border-slate-700 rounded-2xl p-5"
-                  >
-                    <h3 className="text-white font-bold">{aviso.titulo}</h3>
-
-                    <p className="text-gray-400 mt-2">{aviso.descricao}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </>
