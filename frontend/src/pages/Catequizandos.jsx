@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import MainLayout from "../layouts/MainLayout";
 
 import {
@@ -39,10 +38,10 @@ export default function Catequizandos() {
 
       const lista = [];
 
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((docItem) => {
         lista.push({
-          id: doc.id,
-          ...doc.data(),
+          id: docItem.id,
+          ...docItem.data(),
         });
       });
 
@@ -60,10 +59,10 @@ export default function Catequizandos() {
 
       const lista = [];
 
-      snapshot.forEach((doc) => {
+      snapshot.forEach((docItem) => {
         lista.push({
-          id: doc.id,
-          ...doc.data(),
+          id: docItem.id,
+          ...docItem.data(),
         });
       });
 
@@ -195,9 +194,9 @@ export default function Catequizandos() {
             >
               <option value="">Todas as turmas</option>
 
-              {turmas.map((item) => (
-                <option key={item.id} value={item.nome}>
-                  {item.nome}
+              {turmas.map((turma) => (
+                <option key={turma.id} value={turma.nome}>
+                  {turma.nome}
                 </option>
               ))}
             </select>
@@ -219,12 +218,19 @@ export default function Catequizandos() {
                     className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white outline-none"
                   />
 
-                  <input
-                    type="text"
+                  <select
                     value={editTurma}
                     onChange={(e) => setEditTurma(e.target.value)}
                     className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white outline-none"
-                  />
+                  >
+                    <option value="">Selecione uma turma</option>
+
+                    {turmas.map((turma) => (
+                      <option key={turma.id} value={turma.nome}>
+                        {turma.nome}
+                      </option>
+                    ))}
+                  </select>
 
                   <div className="flex gap-3">
                     <button
