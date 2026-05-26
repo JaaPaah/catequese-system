@@ -56,7 +56,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         </Link>
 
         <Link
-          to="/AlunoAvisos"
+          to="/avisosAluno"
           className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 transition text-gray-200"
         >
           <Bell size={20} />
