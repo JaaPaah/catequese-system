@@ -1,8 +1,5 @@
 import {
-  LayoutDashboard,
   User,
-  BookOpen,
-  ClipboardCheck,
   LogIn,
   ChevronLeft,
   ChevronRight,
